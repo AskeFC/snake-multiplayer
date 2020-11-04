@@ -1,5 +1,5 @@
 body {
-    background-color: #555;
+    background-color: #000;
 }
 
 #snake-game {
@@ -33,6 +33,10 @@ body {
 	z-index: 4;
 	transform: translate(-50%, -50%);
 	background-color: #FFF;
+    opacity: 1;
+    transition-property: opacity;
+    transition-timing-function: ease;
+    transition-delay: 0ms;
 }
 
 #server-info {
@@ -44,7 +48,11 @@ body {
 }
 
 #player-info {
-	display: none;
+    display: none;
+    opacity: 0;
+    transition-property: opacity;
+    transition-timing-function: ease;
+    transition-delay: 0ms;
 }
 
 #leaderboard {
@@ -71,4 +79,17 @@ body {
 
 .lb-entry-self {
 	color: #FFAFAF;
+}
+
+.ms500 {
+    transition-duration: 500ms;
+}
+.ms1000 {
+    transition-duration: 1000ms;
+}
+.fadeOut {
+    opacity: 0 !important;
+}
+.fadeIn {
+    opacity: 1 !important;
 }

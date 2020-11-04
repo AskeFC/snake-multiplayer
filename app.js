@@ -2,8 +2,6 @@ const express = require('express');
 const app = express();
 const serv = require('http').Server(app);
 const colors = require('colors/safe');
-const middleware = require('socketio-wildcard')();
-const bodyParser = require('body-parser');
 
 //---------- Server settings ----------
 const fps = 5;
@@ -20,11 +18,11 @@ const config = {
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
 
 console.log(colors.green('[Snake] Starting server...'));
-app.use(bodyParser.urlencoded({extend: true}));
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());  
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 app.get('/', (req, res) => {
-	// res.sendFile(__dirname + '/client/index.html');
 	res.render(__dirname + '/client/index.html', config);
 });
 
@@ -37,7 +35,6 @@ if (process.env.PORT == undefined) {
 
 serv.listen(port);
 const io = require('socket.io')(serv, {});
-io.use(middleware);
 
 console.log(colors.green('[Snake] Socket started on port ' + port));
 
@@ -49,6 +46,7 @@ const Food = (id, x, y) => {
 	let self = {
 		id: id,
 		color: Math.floor(Math.random() * 360),
+        type: Math.floor(Math.random() * 11) + 1,
 		x: x,
 		y: y
 	};
@@ -214,6 +212,7 @@ const update = async () => {
 		foodPack.push({
 			x: food.x,
 			y: food.y,
+            type: food.type,
 			color: food.color
 		});
 	};
@@ -269,7 +268,7 @@ for (let i = 0; i < MAX_FOOD; ++i) {
 const spawnPlayer = (id) => {
 	try {
 		PLAYER_LIST[id].spawn();
-		SOCKET_LIST[id].emit('spawn', {x: PLAYER_LIST[id].x, y: PLAYER_LIST[id].y})
+		SOCKET_LIST[id].emit('spawn', {x: PLAYER_LIST[id].x, y: PLAYER_LIST[id].y});
 	} catch(err) {
 		if(debug) {
 			throw err;
