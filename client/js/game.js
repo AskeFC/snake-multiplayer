@@ -1,3 +1,5 @@
+'use strict';
+
 const PIXEL_SIZE = 14;
 const CAMERA_SPEED = 0.20;
 
@@ -13,6 +15,7 @@ let game;
 let grid;
 let cameraFollow;
 let backgroundSprite;
+let backgroundImage;
 
 let players;
 let tails;
@@ -83,17 +86,22 @@ const create = () => {
     game.stage.backgroundColor = "#000";
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 
-	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background' + BACKGROUND_ID);
-    // backgroundSprite.alpha = 1;
-    game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => { grid = game.add.sprite(0, 0, 'grid'); });
-
 	game.scale.parentIsWindow = false;
 
-	players = game.add.group();
-	tails = game.add.group();
-	food = game.add.group();
 	map = game.add.group();
+	food = game.add.group();
+	tails = game.add.group();
+	players = game.add.group();
 	names = game.add.group();
+    game.world.sendToBack(map);
+    game.world.bringToTop(food);
+    game.world.bringToTop(tails);
+    game.world.bringToTop(players);
+    game.world.bringToTop(names);
+
+	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
+    // backgroundSprite.alpha = 1;
+    game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => { grid = game.add.image(0, 0, 'grid', 0, map); });
 
 	game.camera.x = game.world.centerX;
 	game.camera.y = game.world.centerY;
@@ -126,20 +134,19 @@ const create = () => {
         left: Phaser.Keyboard.A,
         right: Phaser.Keyboard.D
     });
-    arrowKeys.up.onDown.add(() => { emitKeyPress('up'); });
-    arrowKeys.down.onDown.add(() => { emitKeyPress('down'); });
-    arrowKeys.left.onDown.add(() => { emitKeyPress('left'); });
-    arrowKeys.right.onDown.add(() => { emitKeyPress('right'); });
-    wasdKeys.up.onDown.add(() => { emitKeyPress('up'); });
-    wasdKeys.down.onDown.add(() => { emitKeyPress('down'); });
-    wasdKeys.left.onDown.add(() => { emitKeyPress('left'); });
-    wasdKeys.right.onDown.add(() => { emitKeyPress('right'); });
+// Directions: 0 = up (-y), 1 = right (+x), 2 = down = (+y), 3 = left (-x)
+    arrowKeys.up.onDown.add(() => { emitKeyPress(0); });
+    arrowKeys.down.onDown.add(() => { emitKeyPress(2); });
+    arrowKeys.left.onDown.add(() => { emitKeyPress(3); });
+    arrowKeys.right.onDown.add(() => { emitKeyPress(1); });
+    wasdKeys.up.onDown.add(() => { emitKeyPress(0); });
+    wasdKeys.down.onDown.add(() => { emitKeyPress(2); });
+    wasdKeys.left.onDown.add(() => { emitKeyPress(3); });
+    wasdKeys.right.onDown.add(() => { emitKeyPress(1); });
 };
 
 const update = () => {
-    if (game.input.activePointer.withinGame) {
-        game.input.enabled = true;
-    };
+    game.input.enabled = (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
 };
 
 /* Socket events */
@@ -151,6 +158,7 @@ socket.on('id', (data) => {
 socket.on('death', (data) => {
 	elements.totalScore.textContent = data.score;
 	elements.finalScore.style.display = 'block';
+	elements.menu.style.display = 'block';
     setTimeout(() => {
         elements.menu.classList.remove('fadeOut', 'ms500');
         elements.playerInfo.classList.remove('fadeIn', 'ms500');
@@ -165,6 +173,7 @@ socket.on('spawn', (data) => {
     elements.menu.classList.remove('fadeIn', 'ms1000');
     elements.playerInfo.classList.remove('fadeOut', 'ms1000');
     elements.menu.classList.add('ms500', 'fadeOut');
+    setTimeout(() => { elements.menu.style.display = 'none'; }, 500);
     elements.playerInfo.classList.add('ms500', 'fadeIn');
     elements.playerInfo.style.display = 'inline-block';
 	try {
@@ -188,7 +197,7 @@ socket.on('gamestate', (data) => {
 	food.removeAll();
 	names.removeAll();
 
-    let leaderboardcontent = "";
+    let leaderboardcontent = '';
 	while (data.leaderboard.length > 0) {
 		let entry = data.leaderboard.pop();
 		leaderboardcontent += '<div class="lb-entry ' + ((entry.id === PLAYER_ID) ? 'lb-entry-self' : '') + '">' + (entry.place + 1) + ': ' + encodeHTML(entry.name) + '</div>';
@@ -196,18 +205,15 @@ socket.on('gamestate', (data) => {
 
 	elements.leaderboardContent.innerHTML = leaderboardcontent;
 
-	for (let i = 0, iEnd = data.food.length; i < iEnd; ++i) {
+	for (let i = data.food.length - 1; i > -1; --i) {
 		let foodData = data.food[i];
 		let g = game.add.sprite(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE, 'FoodType'+foodData.type);
-        g.scale.setTo(0.15, 0.15);
-		// let g = game.add.graphics(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE);
-		// g.beginFill(hslToHex(foodData.color, 100, 35), 1);
-		// g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
-		// g.endFill();
+        g.width = ratioPixelSize;
+        g.height = ratioPixelSize;
 		food.add(g);
 	};
 
-	for (let i = 0, iEnd = data.playerTails.length; i < iEnd; ++i) {
+	for (let i = data.playerTails.length - 1; i > -1; --i) {
 		let tail = data.playerTails[i];
 		let g = game.add.graphics(tail.x * PIXEL_SIZE, tail.y * PIXEL_SIZE);
 		g.beginFill(hslToHex(tail.color, 100, 25), 1);
@@ -216,7 +222,7 @@ socket.on('gamestate', (data) => {
 		tails.add(g);
 	};
 
-	for (let i = 0, iEnd = data.players.length; i < iEnd; ++i) {
+	for (let i = data.players.length - 1; i > -1; --i) {
 		let player = data.players[i];
 		let g = game.add.graphics(player.x* PIXEL_SIZE, player.y * PIXEL_SIZE);
 
@@ -292,8 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
         snakeGame: document.querySelector("#snake-game")
     };
 
-	elements.name.focus();
 	elements.finalScore.style.display = 'none';
+	elements.name.focus();
 
     elements.btnPlay.addEventListener('click', () => {
 		play();

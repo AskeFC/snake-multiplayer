@@ -1,5 +1,7 @@
+'use strict';
+
 const express = require('express');
-const app = express();
+const app = module.exports = express();
 const serv = require('http').Server(app);
 const colors = require('colors/safe');
 
@@ -33,8 +35,8 @@ if (process.env.PORT == undefined) {
 	console.log(colors.blue('[Snake] No port defined using default (80)'));
 }
 
-serv.listen(port);
 const io = require('socket.io')(serv, {});
+serv.listen(port);
 
 console.log(colors.green('[Snake] Socket started on port ' + port));
 
@@ -43,7 +45,7 @@ let PLAYER_LIST = {};
 let FOOD_LIST = {};
 
 const Food = (id, x, y) => {
-	let self = {
+	const self = {
 		id: id,
 		color: Math.floor(Math.random() * 360),
         type: Math.floor(Math.random() * 11) + 1,
@@ -52,6 +54,17 @@ const Food = (id, x, y) => {
 	};
 	return self;
 };
+
+const spawnFood = () => {
+	const id = Math.random();
+	FOOD_LIST[id] = Food(id, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2);
+};
+
+for (let i = MAX_FOOD; i > -1; --i) {
+	spawnFood();
+};
+
+
 
 // Directions: 0 = up (-y), 1 = right (+x), 2 = down = (+y), 3 = left (-x)
 const Player = (id) => {
@@ -68,10 +81,41 @@ const Player = (id) => {
 		color: 0
 	};
 
+	self.spawn = () => {
+		self.x = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
+		self.y = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
+		self.color = self.y = Math.floor(Math.random() * 360);
+		self.direction = Math.floor(Math.random() * 4);
+		self.score = 0;
+		self.inGame = true;
+	};
+
+    self.deleteTail = () => {
+		for (let i = self.tailBlocks.length; i > 0; --i) {
+			--self.tailBlocks.length;
+		};
+	};
+
+	self.die = () => {
+		self.inGame = false;
+		self.deleteTail();
+		
+		try {
+			SOCKET_LIST[self.id].emit('death', {
+				score:self.score
+			});
+		} catch(err) {
+			if(debug) {
+				console.log(err);
+			};
+		};
+	};
+
 	self.update = () => {
-		self.tailBlocks.unshift(Tail(self.x, self.y, self.id, self.color));
+        self.tailBlocks = [Tail(self.x, self.y, self.id, self.color), ...self.tailBlocks];
+		// self.tailBlocks.unshift(Tail(self.x, self.y, self.id, self.color));
 		while (self.score + 2 < self.tailBlocks.length) {
-			delete self.tailBlocks.pop();
+			--self.tailBlocks.length;
 		};
 		switch (self.direction) {
 			case 0:
@@ -98,9 +142,9 @@ const Player = (id) => {
 		};
 
 		for (let p in PLAYER_LIST) {
-			let player = PLAYER_LIST[p];
+			const player = PLAYER_LIST[p];
 			for (let t in player.tailBlocks) {
-				let pTail = player.tailBlocks[t];
+				const pTail = player.tailBlocks[t];
 				if (self.x === pTail.x && self.y === pTail.y) {
 					self.die();
 					player.score += (5+(self.score / 2));
@@ -110,48 +154,19 @@ const Player = (id) => {
 		};
 
 		for (let f in FOOD_LIST) {
-			let food = FOOD_LIST[f];
+			const food = FOOD_LIST[f];
 			if (self.x === food.x && self.y === food.y) {
-				++self.score;
 				delete FOOD_LIST[food.id];
+				++self.score;
 			};
 		};
 	};
 
-	self.die = () => {
-		self.inGame = false;
-		self.deleteTail();
-		
-		try {
-			SOCKET_LIST[self.id].emit('death', {
-				score:self.score
-			});
-		} catch(err) {
-			if(debug) {
-				console.log(err);
-			};
-		};
-	};
-
-	self.deleteTail = () => {
-		for (let i = self.tailBlocks.length; i > 0; --i) {
-			self.tailBlocks.pop();
-		};
-	};
-
-	self.spawn = () => {
-		self.x = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
-		self.y = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
-		self.color = self.y = Math.floor(Math.random() * 360);
-		self.direction = Math.floor(Math.random() * 4);
-		self.score = 0;
-		self.inGame = true;
-	};
 	return self;
 };
 
 const Tail = (x, y, playerId, color) => {
-	let self = {
+	const self = {
 		x: x,
 		y: y,
 		playerId: playerId,
@@ -167,7 +182,7 @@ const dynamicSort = (property) => {
 		property = property.substr(1);
 	};
 	return (a,b) => {
-		let result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+		const result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
 		return result * sortOrder;
 	};
 };
@@ -180,89 +195,61 @@ const update = async () => {
 	let leaderboardPlayers = [];
 
 	for (let p in PLAYER_LIST) {
-		let player = PLAYER_LIST[p];
+		const player = PLAYER_LIST[p];
 
 		if (player.inGame) {
 			player.update();
 			if (!player.inGame) { // Player died
 				continue;
 			};
-			playerPack.push({
+			playerPack[playerPack.length] = {
 				id: player.id,
 				x: player.x,
 				y: player.y,
 				name: player.name,
 				score: player.score,
 				color: player.color
-			});
-			leaderboardPlayers.push(player);
+			};
+			leaderboardPlayers[leaderboardPlayers.length] = player;
 			for (let t in player.tailBlocks) {
-				let tail = player.tailBlocks[t];
-				tailPack.push({
+				const tail = player.tailBlocks[t];
+				tailPack[tailPack.length] = {
 					x: tail.x,
 					y: tail.y,
 					color: tail.color
-				});
+				};
 			};
 		};
 	};
 
 	for (let f in FOOD_LIST) {
-		let food = FOOD_LIST[f];
-		foodPack.push({
+		const food = FOOD_LIST[f];
+		foodPack[foodPack.length] = {
 			x: food.x,
 			y: food.y,
             type: food.type,
 			color: food.color
-		});
+		};
 	};
 
 	let leaderboard = [];
 
 	leaderboardPlayers.sort(dynamicSort('score'));
 	while (leaderboardPlayers.length > 10) {
-		leaderboardPlayers.pop();
+		--leaderboardPlayers.length;
 	};
 
-	for (let i = 0, iEnd = leaderboardPlayers.length; i < iEnd; ++i) {
-		leaderboard.push({place: i, name: leaderboardPlayers[i].name, id: leaderboardPlayers[i].id});
+	for (let i = 0, iEnd = leaderboardPlayers.length, c = leaderboard.length; i < iEnd; ++i) {
+        const tmpItem = leaderboardPlayers[i];
+		leaderboard[c + i] = {place: i, name: tmpItem.name, id: tmpItem.id};
 	};
 
-	for (let s in SOCKET_LIST) {
-		SOCKET_LIST[s].emit('gamestate', {
-			score: PLAYER_LIST[s].score,
-			leaderboard: leaderboard,
-			players: playerPack,
-			playerTails: tailPack,
-			food: foodPack
-		});
-	};
-};
-
-setInterval(() => {
-	update();
-}, 1000 / fps);
-
-setInterval(() => {
-	config.BACKGROUND_ID = Math.floor(Math.random() * (12 - 1) + 1);
-    io.emit('backgroundUpdate', {
-        BACKGROUND_ID: config.BACKGROUND_ID
+    io.emit('gamestate', {
+        leaderboard: leaderboard,
+        players: playerPack,
+        playerTails: tailPack,
+        food: foodPack
     });
-}, 120000);
-
-const spawnFood = () => {
-	let id = Math.random();
-	FOOD_LIST[id] = Food(id, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2);
-};
-
-setInterval(() => {
-	if (FOOD_LIST.length < MAX_FOOD) {
-		spawnFood();
-	};
-}, 500);
-
-for (let i = 0; i < MAX_FOOD; ++i) {
-	spawnFood();
 };
 
 const spawnPlayer = (id) => {
@@ -288,17 +275,17 @@ const disconnectSocket = (id) => {
 	delete SOCKET_LIST[id];
 };
 
-io.sockets.on('connection', (socket) => {
+io.on('connection', (socket) => {
 	socket.id = Math.random();
 
 	SOCKET_LIST[socket.id] = socket;
-	let player = Player(socket.id);
+	const player = Player(socket.id);
 
 	PLAYER_LIST[socket.id] = player;
-	console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
 	socket.emit('id', {
 		id: socket.id
 	});
+	console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
 
 	socket.on('disconnect', () => {
 		try {
@@ -333,23 +320,18 @@ io.sockets.on('connection', (socket) => {
 		};
 	});
 
-	socket.on('keyPress',(data) => {
-		try {
-			if(data.inputId === 'up' && player.lastDirection !== 2)
-				player.direction = 0;
-			else if(data.inputId === 'right' && player.lastDirection !== 3)
-				player.direction = 1;
-			else if(data.inputId === 'down' && player.lastDirection !== 0)
-				player.direction = 2;
-			else if(data.inputId === 'left' && player.lastDirection !== 1)
-				player.direction = 3;
-		} catch(err) {
-			if(debug) {
-				throw err;
-			};
-		};
+	socket.on('keyPress', (data) => {
+        const inputId = data.inputId;
+        (!(2 === Math.abs(inputId - player.lastDirection)) && (player.direction = inputId));
 	});
 });
+
+setInterval(() => {
+	update();
+	if (FOOD_LIST.length < MAX_FOOD) {
+		spawnFood();
+	};
+}, 1000 / fps);
 
 console.log(colors.green('[Snake] Server started '));
 if (debug) {
