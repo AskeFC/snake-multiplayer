@@ -24,6 +24,7 @@ let names;
 let toolKeys;
 let wasdKeys;
 let arrowKeys;
+let powerKeys;
 
 let elements = {};
 
@@ -65,6 +66,7 @@ const preload = () => {
 //	game.load.image('background10', '/client/img/background/star9.jpg');
 //	game.load.image('background11', '/client/img/background/star10.jpg');
 //	game.load.image('background12', '/client/img/background/star11.jpg');
+	game.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
 	game.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
 	game.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
 	game.load.image('FoodType3', '/client/img/sprite/FoodType3.png');
@@ -165,6 +167,11 @@ const create = () => {
     wasdKeys.down.onDown.add(() => { emitKeyPress(2); });
     wasdKeys.left.onDown.add(() => { emitKeyPress(3); });
     wasdKeys.right.onDown.add(() => { emitKeyPress(1); });
+
+    powerKeys = game.input.keyboard.addKeys({
+        shift: Phaser.Keyboard.SHIFT
+    });
+    powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
 };
 
 const update = () => {
@@ -227,8 +234,8 @@ socket.on('gamestate', (data) => {
 	for (let i = data.food.length - 1; i > -1; --i) {
 		const foodData = data.food[i];
 		const g = game.add.sprite(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE, 'FoodType'+foodData.type);
-        g.width = ratioPixelSize;
-        g.height = ratioPixelSize;
+        g.width = ratioPixelSize + 1;
+        g.height = ratioPixelSize + 1;
         food.add(g);
 	};
 
@@ -264,6 +271,14 @@ socket.on('gamestate', (data) => {
 		t.anchor.setTo(0.5);
         t.smoothed = false;
         t.resolution = window.devicePixelRatio;
+        if (player.invincible) {
+            t.setStyle({
+                fontSize: '20px',
+                fill: 'rgba(255,243,0,1)',
+                stroke: 'rgba(255,0,0,0.8)',
+                strokeThickness: 9
+            });
+        };
         names.add(t);
 	};
 });
