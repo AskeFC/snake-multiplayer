@@ -1,8 +1,5 @@
 'use strict';
 
-const PIXEL_SIZE = 14;
-const CAMERA_SPEED = 0.20;
-
 const ratioPixelSize = PIXEL_SIZE * window.devicePixelRatio;
 // const adjustedWidth = Math.floor(ratioPixelSize * MAP_WIDTH);
 // const adjustedHeight = Math.floor(ratioPixelSize * MAP_HEIGHT);
@@ -10,20 +7,21 @@ const ratioPixelSize = PIXEL_SIZE * window.devicePixelRatio;
 const socket = io();
 
 let PLAYER_ID = -1;
+let WORLD_SCALE = 1.0;
+let STARS = [];
 
+let backgroundImage;
 let game;
 let grid;
 let cameraFollow;
-let backgroundSprite;
-let backgroundImage;
 
-let players;
-let tails;
-let food;
 let map;
+let food;
+let tails;
+let players;
 let names;
 
-let gridKey;
+let toolKeys;
 let wasdKeys;
 let arrowKeys;
 
@@ -84,11 +82,12 @@ const preload = () => {
 const create = () => {
     game.stage.smoothed = false;
     game.stage.backgroundColor = "#000";
+    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 
 	game.scale.parentIsWindow = false;
 
-	map = game.add.group();
+    map = game.add.group();
 	food = game.add.group();
 	tails = game.add.group();
 	players = game.add.group();
@@ -101,7 +100,10 @@ const create = () => {
 
 	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
     // backgroundSprite.alpha = 1;
-    game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => { grid = game.add.image(0, 0, 'grid', 0, map); });
+    game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => {
+        grid = game.add.image(0, 0, 'grid', 0);
+        map.add(grid);
+    });
 
 	game.camera.x = game.world.centerX;
 	game.camera.y = game.world.centerY;
@@ -118,9 +120,29 @@ const create = () => {
 	g.drawRect(0, (MAP_HEIGHT - 1) * PIXEL_SIZE, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 	g.drawRect((MAP_WIDTH - 1) * PIXEL_SIZE, 0, (MAP_HEIGHT) * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 	g.endFill();
+    map.add(g);
 
-    gridKey = game.input.keyboard.addKey(Phaser.Keyboard.G);
-    gridKey.onDown.add(() => { grid.visible = !grid.visible; });
+    for (let i = STARS.length - 1; i > -1; --i) {
+        const tmpItem = STARS[i];
+        const s = game.add.graphics(0, 0);
+        s.beginFill(0xFFFFFF, tmpItem.b);
+        s.drawCircle(tmpItem.x, tmpItem.y, tmpItem.d);
+        s.endFill();
+        map.add(s);
+    };
+
+    toolKeys = game.input.keyboard.addKeys({
+        g: Phaser.Keyboard.G,
+        minus: Phaser.Keyboard.MINUS,
+        plus: Phaser.Keyboard.PLUS,
+        numpadMinus: Phaser.Keyboard.NUMPAD_SUBTRACT,
+        numpadPlus: Phaser.Keyboard.NUMPAD_ADD
+    });
+    toolKeys.g.onDown.add(() => { grid.visible = !grid.visible; });
+    toolKeys.minus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+    toolKeys.plus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+    toolKeys.numpadMinus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+    toolKeys.numpadPlus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
 
     arrowKeys = game.input.keyboard.addKeys({
         up: Phaser.Keyboard.UP,
@@ -152,6 +174,7 @@ const update = () => {
 /* Socket events */
 socket.on('id', (data) => {
 	PLAYER_ID = data.id;
+    STARS = data.stars;
 	console.log('Your id is ' + PLAYER_ID);
 });
 
@@ -192,39 +215,38 @@ socket.on('gamestate', (data) => {
 		return;
 	};
 
-	players.removeAll();
-	tails.removeAll();
-	food.removeAll();
-	names.removeAll();
-
     let leaderboardcontent = '';
 	while (data.leaderboard.length > 0) {
-		let entry = data.leaderboard.pop();
+		const entry = data.leaderboard.pop();
 		leaderboardcontent += '<div class="lb-entry ' + ((entry.id === PLAYER_ID) ? 'lb-entry-self' : '') + '">' + (entry.place + 1) + ': ' + encodeHTML(entry.name) + '</div>';
 	};
 
 	elements.leaderboardContent.innerHTML = leaderboardcontent;
 
+	food.removeAll();
 	for (let i = data.food.length - 1; i > -1; --i) {
-		let foodData = data.food[i];
-		let g = game.add.sprite(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE, 'FoodType'+foodData.type);
+		const foodData = data.food[i];
+		const g = game.add.sprite(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE, 'FoodType'+foodData.type);
         g.width = ratioPixelSize;
         g.height = ratioPixelSize;
-		food.add(g);
+        food.add(g);
 	};
 
+	tails.removeAll();
 	for (let i = data.playerTails.length - 1; i > -1; --i) {
-		let tail = data.playerTails[i];
-		let g = game.add.graphics(tail.x * PIXEL_SIZE, tail.y * PIXEL_SIZE);
+		const tail = data.playerTails[i];
+		const g = game.add.graphics(tail.x * PIXEL_SIZE, tail.y * PIXEL_SIZE);
 		g.beginFill(hslToHex(tail.color, 100, 25), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
-		tails.add(g);
+        tails.add(g);
 	};
 
+	players.removeAll();
+	names.removeAll();
 	for (let i = data.players.length - 1; i > -1; --i) {
-		let player = data.players[i];
-		let g = game.add.graphics(player.x* PIXEL_SIZE, player.y * PIXEL_SIZE);
+		const player = data.players[i];
+		const g = game.add.graphics(player.x* PIXEL_SIZE, player.y * PIXEL_SIZE);
 
 		if (player.id === PLAYER_ID) {
 			cameraFollow.x = (player.x * PIXEL_SIZE);
@@ -236,26 +258,15 @@ socket.on('gamestate', (data) => {
 		g.beginFill(hslToHex(player.color, 100, 50), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
-		players.add(g);
+        players.add(g);
 
-		let t = game.add.text(player.x * PIXEL_SIZE, (player.y * PIXEL_SIZE) - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
+		const t = game.add.text(player.x * PIXEL_SIZE, (player.y * PIXEL_SIZE) - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
 		t.anchor.setTo(0.5);
         t.smoothed = false;
         t.resolution = window.devicePixelRatio;
-		names.add(t);
+        names.add(t);
 	};
 });
-
-/*
-socket.on('backgroundUpdate', (data) => {
-    BACKGROUND_ID = data.BACKGROUND_ID;
-    game.add.tween(backgroundSprite).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.None, true, 0, 0, false);
-    window.setTimeout(() => {
-        backgroundSprite.loadTexture('background' + BACKGROUND_ID);
-        game.add.tween(backgroundSprite).to({ alpha: 1 }, 1000, Phaser.Easing.Linear.None, true, 0, 0, false);
-    }, 1000);
-});
-*/
 
 /* Functions */
 const encodeHTML = (s) => {

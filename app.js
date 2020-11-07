@@ -6,15 +6,28 @@ const serv = require('http').Server(app);
 const colors = require('colors/safe');
 
 //---------- Server settings ----------
-const fps = 5;
-const MAX_FOOD = 1500;
+const fps = 4;
+const MAX_FOOD = 1400;
+const MAX_STARS = 2200;
 const config = {
     MAX_NAME_LENGTH: 32,
     MAP_WIDTH: 500,
     MAP_HEIGHT: 500,
-    BACKGROUND_ID: Math.floor(Math.random() * (12 - 1) + 1)
+    PIXEL_SIZE: 14,
+    CAMERA_SPEED: 0.18
 };
-
+const randomCoordsOnGrid = () => {
+    return {
+        x: Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2,
+        y: Math.floor(Math.random() * (config.MAP_HEIGHT - 4)) + 2
+    };
+};
+const randomCoordsOffGrid = () => {
+    return {
+        x: Math.floor(Math.random() * (config.MAP_WIDTH * config.PIXEL_SIZE - 4)) + 2,
+        y: Math.floor(Math.random() * (config.MAP_HEIGHT * config.PIXEL_SIZE - 4)) + 2
+    };
+};
 //-------------------------------------
 
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
@@ -43,21 +56,39 @@ console.log(colors.green('[Snake] Socket started on port ' + port));
 let SOCKET_LIST = {};
 let PLAYER_LIST = {};
 let FOOD_LIST = {};
+let STAR_LIST = [];
+
+const Star = (x, y, d, b) => {
+    return {
+        x: x,
+        y: y,
+        d: d,
+        b: b
+    };
+};
+
+const generateStars = (c) => {
+    const tmpCoords = randomCoordsOffGrid();
+    STAR_LIST[c || 0] = Star(tmpCoords.x, tmpCoords.y, Math.floor(Math.random() * 5) + 1, (Math.floor(Math.random() * (11 - 6) + 6) / 10));
+};
+
+for (let i = MAX_STARS, c = 0; i > -1; --i, ++c) {
+    generateStars(c);
+};
 
 const Food = (id, x, y) => {
-	const self = {
+	return {
 		id: id,
-		color: Math.floor(Math.random() * 360),
         type: Math.floor(Math.random() * 11) + 1,
 		x: x,
 		y: y
 	};
-	return self;
 };
 
 const spawnFood = () => {
 	const id = Math.random();
-	FOOD_LIST[id] = Food(id, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2, Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2);
+    const tmpCoords = randomCoordsOnGrid();
+	FOOD_LIST[id] = Food(id, tmpCoords.x, tmpCoords.y);
 };
 
 for (let i = MAX_FOOD; i > -1; --i) {
@@ -80,6 +111,12 @@ const Player = (id) => {
 		name: 'Unnamed player',
 		color: 0
 	};
+    const directionMap = [
+        () => { --self.y; },
+        () => { ++self.x; },
+        () => { ++self.y; },
+        () => { --self.x; }
+    ];
 
 	self.spawn = () => {
 		self.x = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
@@ -117,23 +154,8 @@ const Player = (id) => {
 		while (self.score + 2 < self.tailBlocks.length) {
 			--self.tailBlocks.length;
 		};
-		switch (self.direction) {
-			case 0:
-				--self.y;
-				break;
-			case 1:
-				++self.x;
-				break;
-			case 2:
-				++self.y;
-				break;
-			case 3:
-				--self.x;
-				break;
-			default:
-				self.direction = 0;
-				break;
-		};
+
+        directionMap[self.direction]();
 		self.lastDirection = self.direction;
 
 		if (self.x <= 0 || self.x >= config.MAP_WIDTH || self.y <= 0 || self.y >= config.MAP_WIDTH) {
@@ -166,13 +188,12 @@ const Player = (id) => {
 };
 
 const Tail = (x, y, playerId, color) => {
-	const self = {
+	return {
 		x: x,
 		y: y,
 		playerId: playerId,
 		color: color
 	};
-	return self;
 };
 
 const dynamicSort = (property) => {
@@ -227,8 +248,7 @@ const update = async () => {
 		foodPack[foodPack.length] = {
 			x: food.x,
 			y: food.y,
-            type: food.type,
-			color: food.color
+            type: food.type
 		};
 	};
 
@@ -283,7 +303,8 @@ io.on('connection', (socket) => {
 
 	PLAYER_LIST[socket.id] = player;
 	socket.emit('id', {
-		id: socket.id
+		id: socket.id,
+        stars: STAR_LIST
 	});
 	console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
 
