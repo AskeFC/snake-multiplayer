@@ -233,9 +233,9 @@ socket.on('gamestate', (data) => {
 	food.removeAll();
 	for (let i = data.food.length - 1; i > -1; --i) {
 		const foodData = data.food[i];
-		const g = game.add.sprite(foodData.x * PIXEL_SIZE, foodData.y * PIXEL_SIZE, 'FoodType'+foodData.type);
-        g.width = ratioPixelSize + 1;
-        g.height = ratioPixelSize + 1;
+		const g = game.add.sprite((foodData.x * PIXEL_SIZE) - 1, (foodData.y * PIXEL_SIZE) - 1, 'FoodType' + foodData.type);
+        g.width = ratioPixelSize + 4;
+        g.height = ratioPixelSize + 4;
         food.add(g);
 	};
 
