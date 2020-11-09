@@ -9,6 +9,7 @@ const socket = io();
 let PLAYER_ID = -1;
 let WORLD_SCALE = 1.0;
 let STARS = [];
+let isMobile = false;
 
 let backgroundImage;
 let game;
@@ -20,17 +21,65 @@ let food;
 let tails;
 let players;
 let names;
+let ui;
 
 let toolKeys;
 let wasdKeys;
 let arrowKeys;
 let powerKeys;
+let uiTouchControl;
+let uiGamepad;
+let uiButton;
 
 let elements = {};
 
 /* Server ping */
 let startTime;
-
+// let startTime2;
+/*
+const ws = new WebSocket('ws://' + window.location.host + ':1337');
+ws.onopen = (evt) => {
+    setInterval(() => {
+        startTime = Date.now();
+        ws.send(JSON.stringify({t: 1}));
+    }, 2000);
+    console.log('open', evt);
+    ws.onmessage = (messsage) => {
+        const msg = JSON.parse(messsage.data) || messsage;
+        // console.log('msg', msg);
+        switch (msg.t) {
+            case 0: // gamestate
+                gamestate(msg);
+                break;
+            case 1: // death
+                death(msg);
+                break;
+            case 2: // spawn
+                spawn(msg);
+                break;
+            case 3: // id
+                PLAYER_ID = msg.pId;
+                STARS = msg.stars;
+                console.log('Your id is ' + PLAYER_ID);
+                break;
+            case 4: // pong
+                const latency = Date.now() - startTime;
+                const fast = (latency < 100);
+                elements.pingBadge.classList.remove((fast ? 'badge-danger' : 'badge-success'));
+                elements.pingBadge.classList.add((fast ? 'badge-success' : 'badge-danger'));
+                elements.serverPing.textContent = latency;
+                break;
+            default:
+        };
+    };
+    ws.onclose = (event) => {
+        console.log('close', event);
+    };
+    ws.onerror = (error) => {
+        console.log('error', error);
+    };
+};
+*/
 setInterval(() => {
   startTime = Date.now();
   socket.emit('ping2');
@@ -53,19 +102,7 @@ const emitKeyPress = (inputId) => {
 
 /* Init game engine*/
 const preload = () => {
-//	game.load.image('background0', '/client/img/background/background.png');
-//	game.load.image('background1', '/client/img/background/basic_stars.png');
-//	game.load.image('background2', '/client/img/background/star1.jpg');
-//	game.load.image('background3', '/client/img/background/star2.jpg');
-//	game.load.image('background4', '/client/img/background/star3.jpg');
-//	game.load.image('background5', '/client/img/background/star4.jpg');
-//	game.load.image('background6', '/client/img/background/star5.jpg');
-//	game.load.image('background7', '/client/img/background/star6.jpg');
-//	game.load.image('background8', '/client/img/background/star7.jpg');
-//	game.load.image('background9', '/client/img/background/star8.jpg');
-//	game.load.image('background10', '/client/img/background/star9.jpg');
-//	game.load.image('background11', '/client/img/background/star10.jpg');
-//	game.load.image('background12', '/client/img/background/star11.jpg');
+    isMobile = (game.device.touch && !game.device.mspointer);
 	game.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
 	game.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
 	game.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
@@ -79,11 +116,15 @@ const preload = () => {
 	game.load.image('FoodType10', '/client/img/sprite/FoodType10.png');
 	game.load.image('FoodType11', '/client/img/sprite/FoodType11.png');
 	game.load.image('FoodType12', '/client/img/sprite/FoodType12.png');
+    if (isMobile) {
+        game.load.image('uiButtons', '/client/img/game/uiButtons.png');
+    };
 };
 
 const create = () => {
     game.stage.smoothed = false;
     game.stage.backgroundColor = "#000";
+    game.stage.disableVisibilityChange = true;
     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 
@@ -94,11 +135,13 @@ const create = () => {
 	tails = game.add.group();
 	players = game.add.group();
 	names = game.add.group();
+    ui = game.add.group();
     game.world.sendToBack(map);
     game.world.bringToTop(food);
     game.world.bringToTop(tails);
     game.world.bringToTop(players);
     game.world.bringToTop(names);
+    game.world.bringToTop(ui);
 
 	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
     // backgroundSprite.alpha = 1;
@@ -133,45 +176,59 @@ const create = () => {
         map.add(s);
     };
 
-    toolKeys = game.input.keyboard.addKeys({
-        g: Phaser.Keyboard.G,
-        minus: Phaser.Keyboard.MINUS,
-        plus: Phaser.Keyboard.PLUS,
-        numpadMinus: Phaser.Keyboard.NUMPAD_SUBTRACT,
-        numpadPlus: Phaser.Keyboard.NUMPAD_ADD
-    });
-    toolKeys.g.onDown.add(() => { grid.visible = !grid.visible; });
-    toolKeys.minus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-    toolKeys.plus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-    toolKeys.numpadMinus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-    toolKeys.numpadPlus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+    if (!isMobile) {
+        toolKeys = game.input.keyboard.addKeys({
+            g: Phaser.Keyboard.G,
+            minus: Phaser.Keyboard.MINUS,
+            plus: Phaser.Keyboard.PLUS,
+            numpadMinus: Phaser.Keyboard.NUMPAD_SUBTRACT,
+            numpadPlus: Phaser.Keyboard.NUMPAD_ADD
+        });
+        toolKeys.g.onDown.add(() => { grid.visible = !grid.visible; });
+        toolKeys.minus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+        toolKeys.plus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+        toolKeys.numpadMinus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+        toolKeys.numpadPlus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
 
-    arrowKeys = game.input.keyboard.addKeys({
-        up: Phaser.Keyboard.UP,
-        down: Phaser.Keyboard.DOWN,
-        left: Phaser.Keyboard.LEFT,
-        right: Phaser.Keyboard.RIGHT
-    });
-    wasdKeys = game.input.keyboard.addKeys({
-        up: Phaser.Keyboard.W,
-        down: Phaser.Keyboard.S,
-        left: Phaser.Keyboard.A,
-        right: Phaser.Keyboard.D
-    });
-// Directions: 0 = up (-y), 1 = right (+x), 2 = down = (+y), 3 = left (-x)
-    arrowKeys.up.onDown.add(() => { emitKeyPress(0); });
-    arrowKeys.down.onDown.add(() => { emitKeyPress(2); });
-    arrowKeys.left.onDown.add(() => { emitKeyPress(3); });
-    arrowKeys.right.onDown.add(() => { emitKeyPress(1); });
-    wasdKeys.up.onDown.add(() => { emitKeyPress(0); });
-    wasdKeys.down.onDown.add(() => { emitKeyPress(2); });
-    wasdKeys.left.onDown.add(() => { emitKeyPress(3); });
-    wasdKeys.right.onDown.add(() => { emitKeyPress(1); });
+        arrowKeys = game.input.keyboard.addKeys({
+            up: Phaser.Keyboard.UP,
+            down: Phaser.Keyboard.DOWN,
+            left: Phaser.Keyboard.LEFT,
+            right: Phaser.Keyboard.RIGHT
+        });
+        wasdKeys = game.input.keyboard.addKeys({
+            up: Phaser.Keyboard.W,
+            down: Phaser.Keyboard.S,
+            left: Phaser.Keyboard.A,
+            right: Phaser.Keyboard.D
+        });
+    // Directions: 0 = up (-y), 1 = right (+x), 2 = down = (+y), 3 = left (-x)
+        arrowKeys.up.onDown.add(() => { emitKeyPress(0); });
+        arrowKeys.down.onDown.add(() => { emitKeyPress(2); });
+        arrowKeys.left.onDown.add(() => { emitKeyPress(3); });
+        arrowKeys.right.onDown.add(() => { emitKeyPress(1); });
+        wasdKeys.up.onDown.add(() => { emitKeyPress(0); });
+        wasdKeys.down.onDown.add(() => { emitKeyPress(2); });
+        wasdKeys.left.onDown.add(() => { emitKeyPress(3); });
+        wasdKeys.right.onDown.add(() => { emitKeyPress(1); });
 
-    powerKeys = game.input.keyboard.addKeys({
-        shift: Phaser.Keyboard.SHIFT
-    });
-    powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
+        powerKeys = game.input.keyboard.addKeys({
+            shift: Phaser.Keyboard.SHIFT
+        });
+        powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
+    } else {
+        game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
+        // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
+        uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
+            console.log(evt);
+        });
+        uiButton.width = 250;
+        uiButton.height = 250;
+        uiButton.fixedToCamera = true;
+        uiButton.cameraOffset.setTo(20, 20);
+        uiButton.alpha = 0.5;
+        ui.add(uiButton);
+    };
 };
 
 const update = () => {
@@ -253,21 +310,39 @@ socket.on('gamestate', (data) => {
 	names.removeAll();
 	for (let i = data.players.length - 1; i > -1; --i) {
 		const player = data.players[i];
-		const g = game.add.graphics(player.x* PIXEL_SIZE, player.y * PIXEL_SIZE);
+        const playerX = player.x * PIXEL_SIZE;
+        const playerY = player.y * PIXEL_SIZE;
 
 		if (player.id === PLAYER_ID) {
-			cameraFollow.x = (player.x * PIXEL_SIZE);
-			cameraFollow.y = (player.y * PIXEL_SIZE);
-			elements.playerScore.textContent = player.score;
-			elements.position.textContent = "X: " + player.x + " Y: " + player.y;
+			cameraFollow.x = playerX;
+			cameraFollow.y = playerY;
+            const prevScore = elements.playerScore.textContent;
+            const score = player.score;
+            if (prevScore !== score) {
+                const floatingScore = new FloatingText(game, {
+                    text: score - prevScore,
+                    animation: "smoke",
+                    distance: 60,
+                    textOptions: {
+                        fontSize: 24,
+                        fill: "#FF18AA"
+                    },
+                    x: playerX,
+                    y: playerY,
+                    timeToLive: 1200 // ms
+                });
+            };
+			elements.playerScore.textContent = score;
+			elements.position.textContent = "X: " + playerX + " Y: " + playerY;
 		};
 
+		const g = game.add.graphics(playerX, playerY);
 		g.beginFill(hslToHex(player.color, 100, 50), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
         players.add(g);
 
-		const t = game.add.text(player.x * PIXEL_SIZE, (player.y * PIXEL_SIZE) - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
+		const t = game.add.text(playerX, playerY - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
 		t.anchor.setTo(0.5);
         t.smoothed = false;
         t.resolution = window.devicePixelRatio;
@@ -321,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         leaderboardContent: document.querySelector('#leaderboard-content'),
         serverPing: document.querySelector('#server-ping'),
         pingBadge: document.querySelector('#ping-badge'),
-        snakeGame: document.querySelector("#snake-game")
+        snakeGame: document.querySelector('#snake-game')
     };
 
 	elements.finalScore.style.display = 'none';
@@ -343,12 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	game = new Phaser.Game({
         width: elements.snakeGame.clientWidth,
         height: elements.snakeGame.clientHeight,
-        renderer: Phaser.CANVAS,
         parent: elements.snakeGame,
-        transparent: false,
+        renderType: Phaser.WEBGL_MULTI,
+        transparent: true,
         antialias: false,
         multiTexture: false,
-        backgroundColor: 'rgba(0,0,0,1)',
+        backgroundColor: 'rgba(0,0,0,0)',
         clearBeforeRender: true,
         crisp: true,
         enableDebug: false,

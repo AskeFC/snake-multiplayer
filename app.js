@@ -1,8 +1,10 @@
 'use strict';
 
+//---------- Required modules ----------
 const express = require('express');
 const app = module.exports = express();
 const serv = require('http').Server(app);
+const io = require('socket.io')(serv, {});
 const colors = require('colors/safe');
 
 //---------- Server settings ----------
@@ -17,20 +19,9 @@ const config = {
     PIXEL_SIZE: 14,
     CAMERA_SPEED: 0.25
 };
-const randomCoordsOnGrid = () => {
-    return {
-        x: Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2,
-        y: Math.floor(Math.random() * (config.MAP_HEIGHT - 4)) + 2
-    };
-};
-const randomCoordsOffGrid = () => {
-    return {
-        x: Math.floor(Math.random() * (config.MAP_WIDTH * config.PIXEL_SIZE - 4)) + 2,
-        y: Math.floor(Math.random() * (config.MAP_HEIGHT * config.PIXEL_SIZE - 4)) + 2
-    };
-};
-//-------------------------------------
 
+//---------- Server startup ----------
+const port = process.env.PORT || 80;
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
 
 console.log(colors.green('[Snake] Starting server...'));
@@ -44,20 +35,32 @@ app.get('/', (req, res) => {
 
 app.use('/client', express.static(__dirname + '/client'));
 
-const port = process.env.PORT || 80;
 if (process.env.PORT == undefined) {
 	console.log(colors.blue('[Snake] No port defined using default (80)'));
-}
+};
 
-const io = require('socket.io')(serv, {});
 serv.listen(port);
-
 console.log(colors.green('[Snake] Socket started on port ' + port));
 
+//---------- Game variables ----------
 let SOCKET_LIST = {};
 let PLAYER_LIST = {};
 let FOOD_LIST = {};
 let INVINCIBLE_FOOD_LIST = {};
+
+const randomCoordsOnGrid = () => {
+    return {
+        x: Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2,
+        y: Math.floor(Math.random() * (config.MAP_HEIGHT - 4)) + 2
+    };
+};
+const randomCoordsOffGrid = () => {
+    return {
+        x: Math.floor(Math.random() * (config.MAP_WIDTH * config.PIXEL_SIZE - 4)) + 2,
+        y: Math.floor(Math.random() * (config.MAP_HEIGHT * config.PIXEL_SIZE - 4)) + 2
+    };
+};
+
 const STAR_LIST = Array.from({length: MAX_STARS}, () => {
     const tmpCoords = randomCoordsOffGrid();
     return {
@@ -67,6 +70,7 @@ const STAR_LIST = Array.from({length: MAX_STARS}, () => {
         b: Math.floor(Math.random() * (10 - 6) + 6) / 10
     };
 });
+
 const typeScoreMap = {
     2: (+1),
     3: (+1),
@@ -77,7 +81,6 @@ const typeScoreMap = {
     8: (+5),
     9: (-1)
 };
-
 
 const randomOrientation = () => {
     const val =  Math.floor(Math.random() * 360);
@@ -156,6 +159,7 @@ const Player = (id) => {
 		
 		try {
 			SOCKET_LIST[self.id].emit('death', {
+//			SOCKET_LIST[self.id].send('death', JSON.stringify({
 				score: self.score
 			});
 		} catch(err) {
@@ -338,19 +342,32 @@ const update = async () => {
         const tmpItem = leaderboardPlayers[i];
 		leaderboard[c + i] = {place: i, name: tmpItem.name, id: tmpItem.id};
 	};
-
     io.emit('gamestate', {
         leaderboard: leaderboard,
         players: playerPack,
         playerTails: tailPack,
         food: foodPack
     });
+/*
+    tmpApp.publish('gamestate', JSON.stringify({
+        t: 0,
+        leaderboard: leaderboard,
+        players: playerPack,
+        playerTails: tailPack,
+        food: foodPack
+    }));
+*/
 };
 
 const spawnPlayer = (id) => {
 	try {
 		PLAYER_LIST[id].spawn();
 		SOCKET_LIST[id].emit('spawn', {x: PLAYER_LIST[id].x, y: PLAYER_LIST[id].y});
+//        SOCKET_LIST[id].send(JSON.stringify({
+//            t: 2,
+//            x: PLAYER_LIST[id].x,
+//            y: PLAYER_LIST[id].y
+//        }));
 	} catch(err) {
 		if(debug) {
 			throw err;
@@ -367,6 +384,7 @@ const disconnectSocket = (id) => {
 	} catch(err) {
 	};
 	SOCKET_LIST[id].disconnect();
+	// SOCKET_LIST[id].close();
 	delete SOCKET_LIST[id];
 };
 
@@ -427,7 +445,7 @@ io.on('connection', (socket) => {
             setTimeout(() => {
                 player.usingQuasar = false;
                 player.hasQuasar = false;
-            }, 5000);
+            }, 10000);
         };
 	});
 });
@@ -448,3 +466,110 @@ console.log(colors.green('[Snake] Server started '));
 if (debug) {
 	console.log('Running in debug mode');
 };
+
+
+//--------------------------------------
+
+/*
+const uWS = require('uWebSockets.js');
+const decoder = new TextDecoder('utf-8');
+const msgTypeMap = {
+    0: (ws, msg) => { // keypress
+        const inputId = msg.key;
+        const player =PLAYER_LIST[ws.id];
+        (inputId < 4) && (!(2 === Math.abs(inputId - player.lastDirection)) && (player.direction = inputId));
+        if ((inputId === 4) && player.hasQuasar && !player.usingQuasar) {
+            player.usingQuasar = true;
+            setTimeout(() => {
+                player.usingQuasar = false;
+                player.hasQuasar = false;
+            }, 10000);
+        };        
+    },
+    1: (ws) => { // ping
+        ws.send(JSON.stringify({
+            t: 4
+        }));
+    },
+    2: (ws, msg) => { // spawn
+		try {
+			if (!PLAYER_LIST[ws.id].inGame) {
+				if (msg.name != undefined) {
+					if (!(msg.name.length < 1 || msg.name.length > config.MAX_NAME_LENGTH)) {
+						PLAYER_LIST[ws.id].name = msg.name;
+					};
+				};
+				spawnPlayer(ws.id);
+			};
+		} catch(err) {
+			if (debug) {
+				throw err;
+			};
+		};
+    }
+};
+const tmpApp = uWS.App()
+    .ws('/', {
+        // config
+        compression: 1,
+        maxPayloadLength: 16 * 1024 * 1024,
+        idleTimeout: 60,
+
+        open: (ws, req) => {
+            // this handler is called when a client opens a ws connection with the server
+            console.log('open', ws, req);
+            ws.id = parseInt(Math.random().toString().substring(2), 10);
+            SOCKET_LIST[ws.id] = ws;
+
+            const player = Player(ws.id);
+            PLAYER_LIST[ws.id] = player;
+
+            ws.send(JSON.stringify({
+                t: 3,
+                pId: ws.id,
+                stars: STAR_LIST
+            }));
+            ws.subscribe('gamestate');
+            // console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
+        },
+        
+        ping: (ws) => {
+            console.log('ping', ws);
+        },
+        pong: (ws) => {
+            console.log('pong', ws);
+        },
+        drain: (ws) => {
+            console.log('drain', ws);
+        },
+
+        message: (ws, message, isBinary) => {
+            // called when a client sends a message
+            const msg = JSON.parse(decoder.decode(message));
+            // console.log('msg', ws, JSON.parse(decoder.decode(message)), isBinary);
+            msgTypeMap[msg.t](ws, msg);
+        },
+
+        close: (ws, code, message) => {
+            // called when a ws connection is closed
+            console.log('close', ws, code, message);
+            try {
+                if (PLAYER_LIST[ws.id].inGame) {
+                    --INVINCIBLE_FOOD_LIST.length;
+                };
+                delete PLAYER_LIST[ws.id];
+                console.log(colors.cyan('[Snake] Player with id ' + ws.id + ' disconnected'));
+                disconnectSocket(ws.id);
+            } catch(err) {
+                if (debug) {
+                    throw err;
+                };
+            };
+        }
+    })
+    .listen(1337, (listensocket) => {
+        listensocket ?
+            console.log('Listening to port 1337') :
+            console.log('Failed to listen to port 1337');
+});
+*/

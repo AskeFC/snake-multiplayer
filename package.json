@@ -1,35 +1,42 @@
 {
-  "name": "snake-multiplayer",
+  "name": "multiplayer-space-snake",
   "version": "2.0.0",
-  "description": "Multiplayer snake game",
+  "description": "Multiplayer snake game in space",
+  "keywords": [],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AskeFC/snake-multiplayer/issues"
+  },
+  "author": {
+    "name": "Aske Færch Christensen",
+    "email": "askefc@gmail.com",
+    "url": "https://AskeFC.net"
+  },
+  "contributors": [
+    {
+      "name": "Casper Børgesen",
+      "url": "https://github.com/chau-intl"
+    },
+    {
+      "name": "Anton Udén",
+      "url": "https://github.com/AntonUden"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AskeFC/snake-multiplayer.git"
+  },
   "main": "app.js",
   "scripts": {
     "test": "node --debug --use_strict app.js",
     "inspect": "node --inspect app.js",
     "start": "node app.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AskeFC/snake-multiplayer.git"
-  },
   "dependencies": {
     "colors": ">=1.4.0",
     "ejs": ">=3.1.5",
     "express": ">=4.17.1",
-    "socket.io": ">=3.0.0",
-    "ws": ">=7.3.1"
-  },
-  "keywords": [],
-  "author": "AntonUden",
-  "contributors": [
-    {
-      "name": "Aske Færch Christensen",
-      "email": "askefc@gmail.com",
-      "url": "https://AskeFC.net"
-    }
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/AskeFC/snake-multiplayer/issues"
+    "socket.io": ">=3.0.1",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.10.0"
   }
 }
