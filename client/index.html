@@ -14,6 +14,7 @@
             const PIXEL_SIZE = "<%= PIXEL_SIZE %>";
             const CAMERA_SPEED = "<%= CAMERA_SPEED %>";
         </script>
+        <script src="/client/js/kineticScrolling.min.js"></script>
         <script src="/client/js/floatingText.min.js"></script>
         <script src="/client/js/game.js"></script>
 	</head>
@@ -38,10 +39,42 @@
 				<div class="mb-2">
 					<input id="btn_play" class="form-control btn btn-success active" type="button" value="Play" />
 				</div>
-				<a href="https://github.com/AskeFC/snake-multiplayer/issues" target="_blank">
-                    Report a bug
-                </a>
-			</form>
+                <div class="row">
+                    <a class="col text-left" href="https://github.com/AskeFC/snake-multiplayer/issues" target="_blank">
+                        Report a bug
+                    </a>
+                    <div id="help" class="col text-right">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+                            <defs>
+                                <linearGradient id="a" x1="415" x2="415" y1="237.1" y2="580.8" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0" stop-color="#9a9aff"/>
+                                    <stop offset="1" stop-color="navy"/>
+                                </linearGradient>
+                                <linearGradient id="b" x1="415" x2="415" y1="237.1" y2="580.8" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0" stop-color="#00f"/>
+                                    <stop offset="1" stop-color="navy"/>
+                                </linearGradient>
+                                <linearGradient id="c" x1="377.7" x2="377.7" y1="459.2" y2="488" gradientTransform="matrix(1.0022 0 0 1 -5.7 1.8)" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0" stop-color="#fff"/>
+                                    <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <path fill="url(#a)" fill-rule="evenodd" d="M585.7 409.5a171.4 171.4 0 11-342.9 0 171.4 171.4 0 01343 0z" transform="translate(-90.7 -88.9) scale(.37333)"/>
+                            <path fill="url(#b)" fill-rule="evenodd" d="M585.7 409.5a171.4 171.4 0 11-342.9 0 171.4 171.4 0 01343 0z" transform="translate(-85.8 -84.1) scale(.36167)"/>
+                            <g fill="navy">
+                                <path d="M52.4 58.4c-1.3 0-3.5.1-6.8.5V57l24.9-6.4.6.3v41.8c0 4.5 1 7.3 2.7 8.3 1.3 1 4.4 1.6 9.2 1.9v1.7H45v-1.7c6-.3 9.6-1 11-2.5 1.1-1.3 1.7-3.8 1.7-7.7V65.4c0-4.3-1.3-6.6-4-6.9l-1.3-.1M63.8 23.4c4 0 6.7 1.7 8.3 5.2.6 1.3 1 2.5 1 3.8 0 4-2 6.8-5.6 8.3-1.2.5-2.4.7-3.7.7-3.9 0-6.6-1.8-8.1-5.5-.5-1-.7-2.2-.7-3.5 0-3.8 1.7-6.5 5.2-8.1a8 8 0 013.6-.9"/>
+                            </g>
+                            <g fill="#fff">
+                                <path d="M52.4 59.8c-1.2 0-3.5.1-6.7.5v-1.9L70.5 52l.7.3v41.8c0 4.5.9 7.3 2.6 8.3 1.4 1 4.5 1.7 9.3 1.9v1.7H45v-1.7c5.9-.2 9.5-1 10.9-2.5 1.2-1.3 1.7-3.8 1.7-7.7V66.8c0-4.3-1.3-6.6-3.9-6.9l-1.4-.1M63.9 24.8c4 0 6.7 1.7 8.3 5.2.6 1.3.9 2.5.9 3.8 0 4-1.9 6.8-5.6 8.3-1.1.5-2.3.7-3.6.7-4 0-6.6-1.8-8.1-5.5-.5-1-.7-2.2-.7-3.5 0-3.8 1.7-6.5 5.2-8.1a8 8 0 013.6-.9"/>
+                            </g>
+                            <g fill="#e9e9ff">
+                                <path d="M52.4 59l-6.7.5v-1.9l24.8-6.4.7.3v41.8c0 4.5.9 7.3 2.6 8.3 1.4 1 4.5 1.7 9.3 1.9v1.7H45v-1.7c5.9-.2 9.5-1 10.9-2.5 1.2-1.3 1.7-3.8 1.7-7.7V66c0-4.3-1.3-6.6-3.9-6.9l-1.4-.1M63.9 24c4 0 6.7 1.7 8.3 5.2.6 1.3.9 2.5.9 3.8 0 4-1.9 6.8-5.6 8.3-1.1.5-2.3.7-3.6.7-4 0-6.6-1.8-8.1-5.5-.5-1-.7-2.2-.7-3.5 0-3.8 1.7-6.5 5.2-8.1a8 8 0 013.6-.9"/>
+                            </g>
+                            <path fill="url(#c)" fill-rule="evenodd" d="M372 463.5c-24.4 0-44.7 12.9-48.3 29.7a71.8 71.8 0 0196.7 0c-3.7-16.8-23.9-29.7-48.3-29.7z" transform="translate(-308 -462.2)"/>
+                        </svg>
+                    </div>
+                </div>
+            </form>
 		</div>
 
 		<div id="server-info" class="border border-dark">

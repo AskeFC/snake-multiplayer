@@ -27,6 +27,8 @@ let toolKeys;
 let wasdKeys;
 let arrowKeys;
 let powerKeys;
+let mouse;
+let mouseWheel;
 let uiTouchControl;
 let uiGamepad;
 let uiButton;
@@ -119,12 +121,14 @@ const preload = () => {
     if (isMobile) {
         game.load.image('uiButtons', '/client/img/game/uiButtons.png');
     };
+    game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
 };
 
 const create = () => {
     game.stage.smoothed = false;
     game.stage.backgroundColor = "#000";
     game.stage.disableVisibilityChange = true;
+    game.world.useHandCursor = true;
     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 
@@ -152,9 +156,9 @@ const create = () => {
 
 	game.camera.x = game.world.centerX;
 	game.camera.y = game.world.centerY;
-	game.camera.roundPx = false;
+	game.camera.roundPx = true;
 	cameraFollow = game.add.sprite(game.world.centerX, game.world.centerY);
-	game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
+	// game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
 
 	let g = game.add.graphics(0, 0);
 
@@ -190,12 +194,7 @@ const create = () => {
         toolKeys.numpadMinus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
         toolKeys.numpadPlus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
 
-        arrowKeys = game.input.keyboard.addKeys({
-            up: Phaser.Keyboard.UP,
-            down: Phaser.Keyboard.DOWN,
-            left: Phaser.Keyboard.LEFT,
-            right: Phaser.Keyboard.RIGHT
-        });
+        arrowKeys = game.input.keyboard.createCursorKeys();
         wasdKeys = game.input.keyboard.addKeys({
             up: Phaser.Keyboard.W,
             down: Phaser.Keyboard.S,
@@ -216,16 +215,19 @@ const create = () => {
             shift: Phaser.Keyboard.SHIFT
         });
         powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
+
+        // mouse = game.input.mouse;
     } else {
         game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
         // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
         uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
             console.log(evt);
         });
+        uiButton.anchor.set(0.5, 0.5);
         uiButton.width = 250;
         uiButton.height = 250;
         uiButton.fixedToCamera = true;
-        uiButton.cameraOffset.setTo(20, 20);
+        uiButton.cameraOffset.setTo(135, 135);
         uiButton.alpha = 0.5;
         ui.add(uiButton);
     };
@@ -233,6 +235,15 @@ const create = () => {
 
 const update = () => {
     game.input.enabled = (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
+    if (game.input.activePointer.isDown) {
+        if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+            game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
+            game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
+        };
+        game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
+    } else {
+        game.origDragPoint = null;
+    };
 };
 
 /* Socket events */
@@ -254,6 +265,7 @@ socket.on('death', (data) => {
         setTimeout(() => { elements.playerInfo.style.display = 'none'; }, 1000);
 		elements.btnPlay.focus();
 	}, 1000);
+    game.camera.target = null;
 });
 
 socket.on('spawn', (data) => {
@@ -421,10 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
         width: elements.snakeGame.clientWidth,
         height: elements.snakeGame.clientHeight,
         parent: elements.snakeGame,
-        renderType: Phaser.CANVAS,
+        renderer: Phaser.CANVAS,
         transparent: true,
         antialias: false,
-        multiTexture: false,
+        multiTexture: true,
         backgroundColor: 'rgba(0,0,0,0)',
         clearBeforeRender: true,
         crisp: true,

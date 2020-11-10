@@ -3,6 +3,7 @@ body {
 }
 
 #snake-game {
+    cursor: grab;
 	position: fixed;
     outline: 0;
     padding: 0;
@@ -24,6 +25,7 @@ body {
 }
 
 #menu {
+    cursor: default;
 	position: fixed;
 	width: 30%;
 	left: 50%;
@@ -39,7 +41,15 @@ body {
     transition-delay: 0ms;
 }
 
+#help,
+#help svg {
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+}
+
 #server-info {
+    cursor: default;
 	position: absolute;
 	bottom: 0px;
 	left: 0px;
@@ -56,6 +66,7 @@ body {
 }
 
 #leaderboard {
+    cursor: default;
 	background-color: rgba(200, 200, 200, 0.35);
     border: 5px inset rgba(0, 0, 0, 0.35);
 	position: absolute;
