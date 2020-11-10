@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
         width: elements.snakeGame.clientWidth,
         height: elements.snakeGame.clientHeight,
         parent: elements.snakeGame,
-        renderType: Phaser.WEBGL_MULTI,
+        renderType: Phaser.CANVAS,
         transparent: true,
         antialias: false,
         multiTexture: false,
