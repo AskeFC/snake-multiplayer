@@ -37,6 +37,7 @@
     "ejs": ">=3.1.5",
     "express": ">=4.17.1",
     "socket.io": ">=3.0.1",
+    "unique-names-generator": ">=4.3.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.10.0"
   }
 }

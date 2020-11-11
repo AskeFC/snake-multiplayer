@@ -129,6 +129,9 @@ const create = () => {
     game.stage.backgroundColor = "#000";
     game.stage.disableVisibilityChange = true;
     game.world.useHandCursor = true;
+    if (isMobile) {
+        WORLD_SCALE = 1.5;
+    };
     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 
@@ -234,15 +237,41 @@ const create = () => {
 };
 
 const update = () => {
-    game.input.enabled = (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
-    if (game.input.activePointer.isDown) {
-        if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
-            game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
-            game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
+    game.input.enabled = (isMobile) ? (game.input.pointer1.withinGame && (document.activeElement !== elements.name)) : (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
+    if (!game.input.enabled) { return; };
+    if (!isMobile) {
+        if (game.input.activePointer.isDown) {
+            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+                game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
+                game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
+            };
+            game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
+        } else {
+            game.origDragPoint = null;
         };
-        game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
     } else {
-        game.origDragPoint = null;
+        if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
+            if (game.origPinchPoint1 && game.origPinchPoint2) {
+                drag1X = game.origPinchPoint1.x - game.input.pointer1.position.x;
+                drag1Y = game.origPinchPoint1.y - game.input.pointer1.position.y;
+                drag2X = game.origPinchPoint2.x - game.input.pointer2.position.x;
+                drag2Y = game.origPinchPoint2.y - game.input.pointer2.position.y;
+            };
+            game.origPinchPoint1 = game.input.pointer1.position.clone();
+            game.origPinchPoint2 = game.input.pointer2.position.clone();
+        } else {
+            game.origPinchPoint1 = null;
+            game.origPinchPoint2 = null;
+        };
+        if (game.input.pointer1.isDown) {
+            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+                game.camera.x += game.origDragPoint.x - game.input.pointer1.position.x;
+                game.camera.y += game.origDragPoint.y - game.input.pointer1.position.y;
+            };
+            game.origDragPoint = game.input.pointer1.position.clone();	// set new drag origin to current position
+        } else {
+            game.origDragPoint = null;
+        };
     };
 };
 
@@ -392,7 +421,7 @@ const rgbToHex = (r, g, b) => {
 };
 
 const play = () => {
-	socket.emit('spawn', {name: elements.name.value});
+	socket.emit('spawn', {name: elements.name.value || ''});
 };
 
 /* Load */
@@ -426,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}, {capture: true, once: false, passive: false});
 
     elements.name.addEventListener('change', () => {
-        window.localStorage.setItem('MultiplayerSnake-name', elements.name.value);
+        (elements.name.value.length && window.localStorage.setItem('MultiplayerSnake-name', elements.name.value));
     }, {capture: true, once: false, passive: true});
 
 	game = new Phaser.Game({

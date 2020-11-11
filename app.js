@@ -5,7 +5,9 @@ const express = require('express');
 const app = module.exports = express();
 const serv = require('http').Server(app);
 const io = require('socket.io')(serv, {});
-const colors = require('colors/safe');
+const colours = require('colors/safe');
+const { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } = require('unique-names-generator');
+ 
 
 //---------- Server settings ----------
 const fps = 4;
@@ -19,12 +21,13 @@ const config = {
     PIXEL_SIZE: 14,
     CAMERA_SPEED: 0.25
 };
+const dictionaries = [adjectives, animals, colors, countries, names, starWars];
 
 //---------- Server startup ----------
 const port = process.env.PORT || 80;
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
 
-console.log(colors.green('[Snake] Starting server...'));
+console.log(colours.green('[Snake] Starting server...'));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());  
 app.engine('html', require('ejs').renderFile);
@@ -36,11 +39,11 @@ app.get('/', (req, res) => {
 app.use('/client', express.static(__dirname + '/client'));
 
 if (process.env.PORT == undefined) {
-	console.log(colors.blue('[Snake] No port defined using default (80)'));
+	console.log(colours.blue('[Snake] No port defined using default (80)'));
 };
 
 serv.listen(port);
-console.log(colors.green('[Snake] Socket started on port ' + port));
+console.log(colours.green('[Snake] Socket started on port ' + port));
 
 //---------- Game variables ----------
 let SOCKET_LIST = {};
@@ -48,16 +51,30 @@ let PLAYER_LIST = {};
 let FOOD_LIST = {};
 let INVINCIBLE_FOOD_LIST = {};
 
+const randomName = () => {
+    const amount = ((Math.random() * 3) + 1) | 0;
+    return uniqueNamesGenerator({
+        dictionaries: [...(() => {
+            let tmpDict = [];
+            for (let i = 0; i < amount; (tmpDict[i] = dictionaries[(dictionaries.length * Math.random()) | 0]), ++i) {};
+            return tmpDict;
+        })()],
+        separator: ' ',
+        length: amount,
+        style: 'capital'
+    });
+};
+
 const randomCoordsOnGrid = () => {
     return {
-        x: Math.floor(Math.random() * (config.MAP_WIDTH - 4)) + 2,
-        y: Math.floor(Math.random() * (config.MAP_HEIGHT - 4)) + 2
+        x: ((Math.random() * (config.MAP_WIDTH - 4)) + 2) | 0,
+        y: ((Math.random() * (config.MAP_HEIGHT - 4)) + 2) | 0
     };
 };
 const randomCoordsOffGrid = () => {
     return {
-        x: Math.floor(Math.random() * (config.MAP_WIDTH * config.PIXEL_SIZE - 4)) + 2,
-        y: Math.floor(Math.random() * (config.MAP_HEIGHT * config.PIXEL_SIZE - 4)) + 2
+        x: ((Math.random() * (config.MAP_WIDTH * config.PIXEL_SIZE - 4)) + 2) | 0,
+        y: ((Math.random() * (config.MAP_HEIGHT * config.PIXEL_SIZE - 4)) + 2) | 0
     };
 };
 
@@ -66,8 +83,8 @@ const STAR_LIST = Array.from({length: MAX_STARS}, () => {
     return {
         x: tmpCoords.x,
         y: tmpCoords.y,
-        d: Math.floor(Math.random() * 5) + 1,
-        b: Math.floor(Math.random() * (10 - 6) + 6) / 10
+        d: ((Math.random() * 5) + 1) | 0,
+        b: ((Math.random() * (10 - 6) + 6) | 0) / 10
     };
 });
 
@@ -83,7 +100,7 @@ const typeScoreMap = {
 };
 
 const randomOrientation = () => {
-    const val =  Math.floor(Math.random() * 360);
+    const val =  (Math.random() * 360) | 0;
     const arr = [0, 90, 180, 270];
     return arr[(val % 2)];
 };
@@ -91,7 +108,7 @@ const randomOrientation = () => {
 const Food = (id, x, y, type) => {
 	return {
 		id: id,
-        type: type || Math.floor(Math.random() * 11) + 2,
+        type: type || ((Math.random() * 11) + 2) | 0,
 		x: x,
 		y: y
 	};
@@ -126,7 +143,7 @@ const Player = (id) => {
 		invincible: false,
         hasQuasar: false,
         usingQuasar: false,
-		name: 'Unnamed player',
+		name: randomName(),
 		color: 0
 	};
     const directionMap = [
@@ -137,10 +154,10 @@ const Player = (id) => {
     ];
 
 	self.spawn = () => {
-		self.x = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
-		self.y = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
-		self.color = self.y = Math.floor(Math.random() * 360);
-		self.direction = Math.floor(Math.random() * 4);
+		self.x = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
+		self.y = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
+		self.color = self.y = (Math.random() * 360) | 0;
+		self.direction = (Math.random() * 4) | 0;
 		self.score = 0;
 		self.inGame = true;
         spawnInvincibleFood();
@@ -227,8 +244,8 @@ const Player = (id) => {
                             break;
                         case 12: // worm hole - random teleport
                             delete FOOD_LIST[food.id];
-                            self.x = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
-                            self.y = Math.floor(Math.random() * (config.MAP_WIDTH - 20)) + 10;
+                            self.x = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
+                            self.y = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
                             // self.direction = Math.floor(Math.random() * 4);
                             break;
                         default:
@@ -399,43 +416,7 @@ io.on('connection', (socket) => {
 		id: socket.id,
         stars: STAR_LIST
 	});
-	console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
-
-	socket.on('disconnect', () => {
-		try {
-            if (PLAYER_LIST[socket.id].inGame) {
-                --INVINCIBLE_FOOD_LIST.length;
-            };
-			delete PLAYER_LIST[socket.id];
-			console.log(colors.cyan('[Snake] Player with id ' + socket.id + ' disconnected'));
-			disconnectSocket(socket.id);
-		} catch(err) {
-			if (debug) {
-				throw err;
-			};
-		};
-	});
-
-	socket.on('ping2', () => {
-		socket.emit('pong2');
-	});
-
-	socket.on('spawn', (data) => {
-		try {
-			if (!PLAYER_LIST[socket.id].inGame) {
-				if (data.name != undefined) {
-					if (!(data.name.length < 1 || data.name.length > config.MAX_NAME_LENGTH)) {
-						PLAYER_LIST[socket.id].name = data.name;
-					};
-				};
-				spawnPlayer(socket.id);
-			};
-		} catch(err) {
-			if (debug) {
-				throw err;
-			};
-		};
-	});
+	console.log(colours.cyan('[Snake] Socket connection with id ' + socket.id));
 
 	socket.on('keyPress', (data) => {
         const inputId = data.inputId;
@@ -447,6 +428,38 @@ io.on('connection', (socket) => {
                 player.hasQuasar = false;
             }, 10000);
         };
+	});
+
+	socket.on('ping2', () => {
+		socket.emit('pong2');
+	});
+
+	socket.on('disconnect', () => {
+		try {
+            if (PLAYER_LIST[socket.id].inGame) {
+                --INVINCIBLE_FOOD_LIST.length;
+            };
+			delete PLAYER_LIST[socket.id];
+			console.log(colours.cyan('[Snake] Player with id ' + socket.id + ' disconnected'));
+			disconnectSocket(socket.id);
+		} catch(err) {
+			if (debug) {
+				throw err;
+			};
+		};
+	});
+
+    socket.on('spawn', (data) => {
+		try {
+			if (!PLAYER_LIST[socket.id].inGame) {
+                PLAYER_LIST[socket.id].name = ((data.name == undefined) || (data.name.length < 1 || data.name.length > config.MAX_NAME_LENGTH)) ? randomName() : data.name;
+				spawnPlayer(socket.id);
+			};
+		} catch(err) {
+			if (debug) {
+				throw err;
+			};
+		};
 	});
 });
 
@@ -462,7 +475,7 @@ setInterval(() => {
     halfTime = !halfTime;
 }, 1000 / (fps * 2));
 
-console.log(colors.green('[Snake] Server started '));
+console.log(colours.green('[Snake] Server started '));
 if (debug) {
 	console.log('Running in debug mode');
 };
