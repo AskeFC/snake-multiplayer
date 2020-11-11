@@ -1,6 +1,7 @@
 'use strict';
 
-const ratioPixelSize = PIXEL_SIZE * window.devicePixelRatio;
+const pixelRatio = window.devicePixelRatio;
+const ratioPixelSize = PIXEL_SIZE * pixelRatio;
 // const adjustedWidth = Math.floor(ratioPixelSize * MAP_WIDTH);
 // const adjustedHeight = Math.floor(ratioPixelSize * MAP_HEIGHT);
 
@@ -459,8 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {capture: true, once: false, passive: true});
 
 	game = new Phaser.Game({
-        width: elements.snakeGame.clientWidth,
-        height: elements.snakeGame.clientHeight,
+        width: elements.snakeGame.clientWidth * pixelRatio,
+        height: elements.snakeGame.clientHeight * pixelRatio,
         parent: elements.snakeGame,
         renderer: Phaser.CANVAS,
         transparent: true,
@@ -471,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
         crisp: true,
         enableDebug: false,
         fullScreenScaleMode: Phaser.ScaleManager.RESIZE,
-        resolution: window.devicePixelRatio,
+        resolution: pixelRatio,
         roundPixels: true,
         scaleMode: Phaser.ScaleManager.RESIZE,
         state: {
