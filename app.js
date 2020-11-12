@@ -10,7 +10,7 @@ const { uniqueNamesGenerator, adjectives, animals, colors, countries, names, sta
  
 
 //---------- Server settings ----------
-const fps = 3;
+const fps = 4;
 let halfTime = false;
 const MAX_FOOD = 1400;
 const MAX_STARS = 2500;
