@@ -126,14 +126,14 @@ const preload = () => {
 };
 
 const create = () => {
+    if (isMobile) {
+        WORLD_SCALE = 2.0;
+    };
     game.stage.smoothed = false;
     game.stage.backgroundColor = "#000";
     game.stage.disableVisibilityChange = true;
     game.world.useHandCursor = true;
     game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
-    if (isMobile) {
-        WORLD_SCALE = 2.0;
-    };
     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
 
 	game.scale.parentIsWindow = false;

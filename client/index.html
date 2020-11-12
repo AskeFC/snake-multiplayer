@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 	<head>
-		<title>Multiplayer snake</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi">
+
+        <title>Multiplayer snake</title>
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 		<link rel="stylesheet" type="text/css" href="/client/css/game.css">
@@ -34,10 +37,10 @@
 				</div>
 				<br>
 				<div class="form-group">
-					<input id="name" class="form-control" type="text" maxlength="<%= MAX_NAME_LENGTH %>" placeholder="Name Your Snake" value="" />
+					<input id="name" class="form-control" type="text" maxlength="<%= MAX_NAME_LENGTH %>" placeholder="Name Your Snake" value="">
 				</div>
 				<div class="mb-2">
-					<input id="btn_play" class="form-control btn btn-success active" type="button" value="Play" />
+					<input id="btn_play" class="form-control btn btn-success active" type="button" value="Play">
 				</div>
                 <div class="row">
                     <a class="col text-left" href="https://github.com/AskeFC/snake-multiplayer/issues" target="_blank">
@@ -47,16 +50,16 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
                             <defs>
                                 <linearGradient id="a" x1="415" x2="415" y1="237.1" y2="580.8" gradientUnits="userSpaceOnUse">
-                                    <stop offset="0" stop-color="#9a9aff"/>
+                                    <stop offset="0" stop-color="#9A9AFF"/>
                                     <stop offset="1" stop-color="navy"/>
                                 </linearGradient>
                                 <linearGradient id="b" x1="415" x2="415" y1="237.1" y2="580.8" gradientUnits="userSpaceOnUse">
-                                    <stop offset="0" stop-color="#00f"/>
+                                    <stop offset="0" stop-color="#00F"/>
                                     <stop offset="1" stop-color="navy"/>
                                 </linearGradient>
                                 <linearGradient id="c" x1="377.7" x2="377.7" y1="459.2" y2="488" gradientTransform="matrix(1.0022 0 0 1 -5.7 1.8)" gradientUnits="userSpaceOnUse">
-                                    <stop offset="0" stop-color="#fff"/>
-                                    <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                                    <stop offset="0" stop-color="#FFF"/>
+                                    <stop offset="1" stop-color="#FFF" stop-opacity="0"/>
                                 </linearGradient>
                             </defs>
                             <path fill="url(#a)" fill-rule="evenodd" d="M585.7 409.5a171.4 171.4 0 11-342.9 0 171.4 171.4 0 01343 0z" transform="translate(-90.7 -88.9) scale(.37333)"/>
