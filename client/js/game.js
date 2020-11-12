@@ -154,10 +154,12 @@ const create = () => {
 
 	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
     // backgroundSprite.alpha = 1;
-    game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => {
-        grid = game.add.image(0, 0, 'grid', 0);
-        map.add(grid);
-    });
+    if (!isMobile) {
+        game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => {
+            grid = game.add.image(0, 0, 'grid', 0);
+            map.add(grid);
+        });
+    };
 
 	game.camera.x = game.world.centerX;
 	game.camera.y = game.world.centerY;
