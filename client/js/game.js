@@ -105,7 +105,8 @@ const emitKeyPress = (inputId) => {
 
 /* Init game engine*/
 const preload = () => {
-    isMobile = (game.device.touch && !game.device.mspointer);
+    isMobile = game.device.touch;
+//    isMobile = (game.device.touch && !game.device.mspointer);
 	game.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
 	game.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
 	game.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
@@ -184,7 +185,20 @@ const create = () => {
         map.add(s);
     };
 
-    if (!isMobile) {
+    if (isMobile) {
+        game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
+        // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
+        uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
+            console.log(evt);
+        });
+        uiButton.anchor.set(0.5, 0.5);
+        uiButton.width = 250;
+        uiButton.height = 250;
+        uiButton.fixedToCamera = true;
+        uiButton.cameraOffset.setTo(135, 135);
+        uiButton.alpha = 0.5;
+        ui.add(uiButton);
+    } else {
         toolKeys = game.input.keyboard.addKeys({
             g: Phaser.Keyboard.G,
             minus: Phaser.Keyboard.MINUS,
@@ -221,36 +235,13 @@ const create = () => {
         powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
 
         // mouse = game.input.mouse;
-    } else {
-        game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
-        // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
-        uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
-            console.log(evt);
-        });
-        uiButton.anchor.set(0.5, 0.5);
-        uiButton.width = 250;
-        uiButton.height = 250;
-        uiButton.fixedToCamera = true;
-        uiButton.cameraOffset.setTo(135, 135);
-        uiButton.alpha = 0.5;
-        ui.add(uiButton);
     };
 };
 
 const update = () => {
     game.input.enabled = (isMobile) ? (game.input.pointer1.withinGame && (document.activeElement !== elements.name)) : (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
-    if (!game.input.enabled) { return; };
-    if (!isMobile) {
-        if (game.input.activePointer.isDown) {
-            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
-                game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
-                game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
-            };
-            game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
-        } else {
-            game.origDragPoint = null;
-        };
-    } else {
+    if (!(game.input.enabled)) { return; };
+    if (isMobile) {
         if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
             if (game.origPinchPoint1 && game.origPinchPoint2) {
                 drag1X = game.origPinchPoint1.x - game.input.pointer1.position.x;
@@ -270,6 +261,16 @@ const update = () => {
                 game.camera.y += game.origDragPoint.y - game.input.pointer1.position.y;
             };
             game.origDragPoint = game.input.pointer1.position.clone();	// set new drag origin to current position
+        } else {
+            game.origDragPoint = null;
+        };
+    } else {
+        if (game.input.activePointer.isDown) {
+            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+                game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
+                game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
+            };
+            game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
         } else {
             game.origDragPoint = null;
         };
