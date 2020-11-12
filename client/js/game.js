@@ -188,7 +188,10 @@ const create = () => {
     };
 
     if (isMobile) {
-        game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
+        game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
+        game.scale.forceOrientation(true, false);
+        //game.scale.startFullScreen(false, false, { navigationUI: 'hide' });
+        // game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
         // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
         uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
             console.log(evt);
@@ -241,8 +244,6 @@ const create = () => {
 };
 
 const update = () => {
-    game.input.enabled = (isMobile) ? (game.input.pointer1.withinGame && (document.activeElement !== elements.name)) : (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
-    if (!(game.input.enabled)) { return; };
     if (isMobile) {
         if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
             if (game.origPinchPoint1 && game.origPinchPoint2) {
@@ -267,6 +268,8 @@ const update = () => {
             game.origDragPoint = null;
         };
     } else {
+        game.input.enabled = (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
+        if (!game.input.enabled) { return; };
         if (game.input.activePointer.isDown) {
             if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
                 game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
