@@ -176,7 +176,7 @@ const create = () => {
 	g.endFill();
     map.add(g);
 
-    for (let i = STARS.length - 1; i > -1; --i) {
+    for (let i = (isMobile) ? (STARS.length / 2) - 1 : STARS.length - 1; i > -1; --i) {
         const tmpItem = STARS[i];
         const s = game.add.graphics(0, 0);
         s.beginFill(0xFFFFFF, tmpItem.b);
