@@ -190,7 +190,9 @@ const create = () => {
     if (isMobile) {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
         game.scale.forceOrientation(true, false);
-        //game.scale.startFullScreen(false, false, { navigationUI: 'hide' });
+        // game.scale.startFullScreen(false, false, { navigationUI: 'hide' });
+        // game.scale.enterIncorrectOrientation(callback, this);
+        // game.scale.leaveIncorrectOrientation(callback, this);
         // game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
         // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
         uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
@@ -247,10 +249,22 @@ const update = () => {
     if (isMobile) {
         if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
             if (game.origPinchPoint1 && game.origPinchPoint2) {
-                drag1X = game.origPinchPoint1.x - game.input.pointer1.position.x;
-                drag1Y = game.origPinchPoint1.y - game.input.pointer1.position.y;
-                drag2X = game.origPinchPoint2.x - game.input.pointer2.position.x;
-                drag2Y = game.origPinchPoint2.y - game.input.pointer2.position.y;
+                if ((game.origPinchPoint1.x > game.input.pointer1.position.x)
+                    && (game.origPinchPoint2.x > game.input.pointer2.position.x)
+                    && (game.origPinchPoint1.y > game.input.pointer1.position.y)
+                    && (game.origPinchPoint2.y > game.input.pointer2.position.y))
+                {
+                    WORLD_SCALE -= 0.1;
+                    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+                };
+                if ((game.origPinchPoint1.x < game.input.pointer1.position.x)
+                    && (game.origPinchPoint2.x < game.input.pointer2.position.x)
+                    && (game.origPinchPoint1.y < game.input.pointer1.position.y)
+                    && (game.origPinchPoint2.y < game.input.pointer2.position.y))
+                {
+                    WORLD_SCALE += 0.1;
+                    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+                };
             };
             game.origPinchPoint1 = game.input.pointer1.position.clone();
             game.origPinchPoint2 = game.input.pointer2.position.clone();
