@@ -188,6 +188,10 @@ const create = () => {
     };
 
     if (isMobile) {
+        game.input.pointer1 = game.input.addPointer();
+        game.input.pointer2 = game.input.addPointer();
+        game.input.pointer3 = game.input.addPointer();
+        game.input.pointer4 = game.input.addPointer();
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
         game.scale.forceOrientation(true, false);
         // game.scale.startFullScreen(false, false, { navigationUI: 'hide' });
@@ -249,18 +253,18 @@ const update = () => {
     if (isMobile) {
         if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
             if (game.origPinchPoint1 && game.origPinchPoint2) {
-                if ((game.origPinchPoint1.x > game.input.pointer1.position.x)
-                    && (game.origPinchPoint2.x > game.input.pointer2.position.x)
-                    && (game.origPinchPoint1.y > game.input.pointer1.position.y)
-                    && (game.origPinchPoint2.y > game.input.pointer2.position.y))
+                if ((game.origPinchPoint1.x >= game.input.pointer1.position.x)
+                    && (game.origPinchPoint2.x >= game.input.pointer2.position.x)
+                    && (game.origPinchPoint1.y >= game.input.pointer1.position.y)
+                    && (game.origPinchPoint2.y >= game.input.pointer2.position.y))
                 {
                     WORLD_SCALE -= 0.1;
                     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
                 };
-                if ((game.origPinchPoint1.x < game.input.pointer1.position.x)
-                    && (game.origPinchPoint2.x < game.input.pointer2.position.x)
-                    && (game.origPinchPoint1.y < game.input.pointer1.position.y)
-                    && (game.origPinchPoint2.y < game.input.pointer2.position.y))
+                if ((game.origPinchPoint1.x <= game.input.pointer1.position.x)
+                    && (game.origPinchPoint2.x <= game.input.pointer2.position.x)
+                    && (game.origPinchPoint1.y <= game.input.pointer1.position.y)
+                    && (game.origPinchPoint2.y <= game.input.pointer2.position.y))
                 {
                     WORLD_SCALE += 0.1;
                     game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
