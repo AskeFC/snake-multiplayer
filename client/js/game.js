@@ -1,16 +1,22 @@
 'use strict';
 
-const pixelRatio = window.devicePixelRatio;
-const ratioPixelSize = PIXEL_SIZE * pixelRatio;
-// const adjustedWidth = Math.floor(ratioPixelSize * MAP_WIDTH);
-// const adjustedHeight = Math.floor(ratioPixelSize * MAP_HEIGHT);
+//const socket = io();
 
-const socket = io();
+let MAX_NAME_LENGTH = 32;
+let MAP_WIDTH = 500;
+let MAP_HEIGHT = 500;
+let PIXEL_SIZE = 14;
+let CAMERA_SPEED = 0.25;
+let MAX_STARS = 2500;
 
 let PLAYER_ID = -1;
 let WORLD_SCALE = 1.0;
-let STARS = [];
 let isMobile = false;
+
+const pixelRatio = window.devicePixelRatio;
+// const ratioPixelSize = PIXEL_SIZE * pixelRatio;
+// const adjustedWidth = Math.floor(ratioPixelSize * MAP_WIDTH);
+// const adjustedHeight = Math.floor(ratioPixelSize * MAP_HEIGHT);
 
 let backgroundImage;
 let game;
@@ -38,51 +44,71 @@ let elements = {};
 
 /* Server ping */
 let startTime;
-// let startTime2;
-/*
+
+
+const decode = (msg) => {
+    return JSON.parse(msg);
+};
+const encode = (msg = {}) => {
+    const strMsg = JSON.stringify(msg);
+    const encoder = new TextEncoder();
+    const view = encoder.encode(strMsg);
+    return view;
+};
+
 const ws = new WebSocket('ws://' + window.location.host + ':1337');
+ws.binaryType = 'ArrayBuffer';
+ws.onerror = (evt) => {
+    console.log('error', evt);
+};
+ws.onclose = (evt) => {
+    console.log('close', evt);
+};
 ws.onopen = (evt) => {
+    // console.log('open', evt);
     setInterval(() => {
         startTime = Date.now();
-        ws.send(JSON.stringify({t: 1}));
+        // ws.send(JSON.stringify({t: 1}));
+        ws.send(encode({t: 1}));
     }, 2000);
-    console.log('open', evt);
-    ws.onmessage = (messsage) => {
-        const msg = JSON.parse(messsage.data) || messsage;
-        // console.log('msg', msg);
-        switch (msg.t) {
-            case 0: // gamestate
-                gamestate(msg);
-                break;
-            case 1: // death
-                death(msg);
-                break;
-            case 2: // spawn
-                spawn(msg);
-                break;
-            case 3: // id
-                PLAYER_ID = msg.pId;
-                STARS = msg.stars;
-                console.log('Your id is ' + PLAYER_ID);
-                break;
-            case 4: // pong
-                const latency = Date.now() - startTime;
-                const fast = (latency < 100);
-                elements.pingBadge.classList.remove((fast ? 'badge-danger' : 'badge-success'));
-                elements.pingBadge.classList.add((fast ? 'badge-success' : 'badge-danger'));
-                elements.serverPing.textContent = latency;
-                break;
-            default:
-        };
-    };
-    ws.onclose = (event) => {
-        console.log('close', event);
-    };
-    ws.onerror = (error) => {
-        console.log('error', error);
+};
+ws.onmessage = (messsage) => {
+    // const msg = JSON.parse(messsage.data) || messsage;
+    // console.log('messsage', messsage);
+    const msg = decode(messsage.data) || messsage;
+    // console.log('msg', msg);
+    switch (msg.t) {
+        case 0: // gamestate
+            gamestate(msg);
+            break;
+        case 1: // death
+            death(msg);
+            break;
+        case 2: // spawn
+            spawn(msg);
+            break;
+        case 3: // id
+            const tmpConf = msg.conf;
+            MAX_NAME_LENGTH = tmpConf.MAX_NAME_LENGTH;
+            MAP_WIDTH = tmpConf.MAP_WIDTH;
+            MAP_HEIGHT = tmpConf.MAP_HEIGHT;
+            PIXEL_SIZE = tmpConf.PIXEL_SIZE;
+            CAMERA_SPEED = tmpConf.CAMERA_SPEED;
+            PLAYER_ID = msg.pId;
+            console.log('Your id is ' + PLAYER_ID);
+            break;
+        case 4: // pong
+            const latency = Date.now() - startTime;
+            const fast = (latency < 100);
+            elements.pingBadge.classList.remove((fast ? 'badge-danger' : 'badge-success'));
+            elements.pingBadge.classList.add((fast ? 'badge-success' : 'badge-danger'));
+            elements.serverPing.textContent = latency;
+            break;
+        default:
     };
 };
-*/
+
+/*
 setInterval(() => {
   startTime = Date.now();
   socket.emit('ping2');
@@ -95,12 +121,14 @@ socket.on('pong2', () => {
     elements.pingBadge.classList.add((fast ? 'badge-success' : 'badge-danger'));
 	elements.serverPing.textContent = latency;
 });
-
+*/
 const emitKeyPress = (inputId) => {
-    socket.emit('keyPress', {
-        inputId: inputId,
-        state: true
-    });
+    // ws.send(JSON.stringify({t: 0, key: inputId}));
+    ws.send(encode({t: 0, key: inputId}));
+//    socket.emit('keyPress', {
+//        inputId: inputId,
+//        state: true
+//    });
 };
 
 /* Init game engine*/
@@ -123,7 +151,7 @@ const preload = () => {
     if (isMobile) {
         game.load.image('uiButtons', '/client/img/game/uiButtons.png');
     };
-    game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
+//    game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
 };
 
 const create = () => {
@@ -155,7 +183,7 @@ const create = () => {
 	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
     // backgroundSprite.alpha = 1;
     if (!isMobile) {
-        game.create.grid('grid', MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, ratioPixelSize, ratioPixelSize, 'rgba(255,255,255,0.2)', true, () => {
+        game.create.grid('grid', MAP_WIDTH * PIXEL_SIZE * pixelRatio, MAP_HEIGHT * PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, 'rgba(255,255,255,0.2)', true, () => {
             grid = game.add.image(0, 0, 'grid', 0);
             map.add(grid);
         });
@@ -178,7 +206,24 @@ const create = () => {
 	g.endFill();
     map.add(g);
 
-    for (let i = (isMobile) ? (STARS.length / 2) - 1 : STARS.length - 1; i > -1; --i) {
+    const randomCoordsOffGrid = () => {
+        return {
+            x: ((Math.random() * (MAP_WIDTH * PIXEL_SIZE - 4)) + 2) | 0,
+            y: ((Math.random() * (MAP_HEIGHT * PIXEL_SIZE - 4)) + 2) | 0
+        };
+    };
+
+    const STARS = Array.from({length: (isMobile) ? (MAX_STARS / 2) : MAX_STARS}, () => {
+        const tmpCoords = randomCoordsOffGrid();
+        return {
+            x: tmpCoords.x,
+            y: tmpCoords.y,
+            d: ((Math.random() * 5) + 1) | 0,
+            b: ((Math.random() * (10 - 6) + 6) | 0) / 10
+        };
+    });
+
+    for (let i = STARS.length - 1; i > -1; --i) {
         const tmpItem = STARS[i];
         const s = game.add.graphics(0, 0);
         s.beginFill(0xFFFFFF, tmpItem.b);
@@ -298,13 +343,18 @@ const update = () => {
 };
 
 /* Socket events */
-socket.on('id', (data) => {
-	PLAYER_ID = data.id;
-    STARS = data.stars;
-	console.log('Your id is ' + PLAYER_ID);
-});
+//socket.on('id', (data) => {
+//	PLAYER_ID = data.id;
+//    MAX_NAME_LENGTH = data.config.MAX_NAME_LENGTH;
+//    MAP_WIDTH = data.config.MAP_WIDTH;
+//    MAP_HEIGHT = data.config.MAP_HEIGHT;
+//    PIXEL_SIZE = data.config.PIXEL_SIZE;
+//    CAMERA_SPEED = data.config.CAMERA_SPEED;
+//	console.log('Your id is ' + PLAYER_ID);
+//});
 
-socket.on('death', (data) => {
+// socket.on('death', (data) => {
+const death = (data) => {
 	elements.totalScore.textContent = data.score;
 	elements.finalScore.style.display = 'block';
 	elements.menu.style.display = 'block';
@@ -317,9 +367,10 @@ socket.on('death', (data) => {
 		elements.btnPlay.focus();
 	}, 1000);
     game.camera.target = null;
-});
+};
 
-socket.on('spawn', (data) => {
+// socket.on('spawn', (data) => {
+const spawn = (data) => {
     elements.menu.classList.remove('fadeIn', 'ms1000');
     elements.playerInfo.classList.remove('fadeOut', 'ms1000');
     elements.menu.classList.add('ms500', 'fadeOut');
@@ -334,9 +385,10 @@ socket.on('spawn', (data) => {
 	} catch(err) {
 		console.log(err);
 	};
-});
+};
 
-socket.on('gamestate', (data) => {
+// socket.on('gamestate', (data) => {
+const gamestate = (data) => {
     if (players == undefined || tails == undefined || food == undefined || names == undefined) {
 		console.log('Waiting for engine to start...');
 		return;
@@ -355,8 +407,8 @@ socket.on('gamestate', (data) => {
 		const foodData = data.food[i];
         if (foodData && foodData.type) {
             const g = game.add.sprite((foodData.x * PIXEL_SIZE) - 1, (foodData.y * PIXEL_SIZE) - 1, 'FoodType' + foodData.type);
-            g.width = ratioPixelSize + 4;
-            g.height = ratioPixelSize + 4;
+            g.width = PIXEL_SIZE * pixelRatio + 4;
+            g.height = PIXEL_SIZE * pixelRatio + 4;
             food.add(g);
         };
 	};
@@ -387,14 +439,14 @@ socket.on('gamestate', (data) => {
                 const floatingScore = new FloatingText(game, {
                     text: score - prevScore,
                     animation: "smoke",
-                    distance: 60,
+                    distance: 70,
                     textOptions: {
                         fontSize: 24,
                         fill: "#FF18AA"
                     },
                     x: playerX,
                     y: playerY,
-                    timeToLive: 1200 // ms
+                    timeToLive: 1500 // ms
                 });
             };
 			elements.playerScore.textContent = score;
@@ -421,7 +473,7 @@ socket.on('gamestate', (data) => {
         };
         names.add(t);
 	};
-});
+};
 
 /* Functions */
 const encodeHTML = (s) => {
@@ -443,7 +495,9 @@ const rgbToHex = (r, g, b) => {
 };
 
 const play = () => {
-	socket.emit('spawn', {name: elements.name.value || ''});
+	// socket.emit('spawn', {name: elements.name.value || ''});
+    // ws.send(JSON.stringify({t: 2, name: elements.name.value || ''}));
+    ws.send(encode({t: 2, name: elements.name.value || ''}));
 };
 
 /* Load */
@@ -465,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 	elements.finalScore.style.display = 'none';
+    elements.name.setAttribute('maxlength', MAX_NAME_LENGTH);
 	elements.name.focus();
 
     elements.btnPlay.addEventListener('click', () => {

@@ -12,13 +12,7 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js" integrity="sha512-gVG6WRMUYFaIdoocaxbqd02p3DUbhReTBWc7NTGB96i7vONrr7GuCZJHFFmkXEhpwilIWUnfRIMSlKaApwd/jg==" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/phaser-ce@2.16.1/build/phaser.min.js" integrity="sha256-X1BGgfUnR+gaOBIHJcf3+ZNsOqerfV6UaQByz4oXxBQ=" crossorigin="anonymous"></script>
-        <script>
-            const MAP_WIDTH = "<%= MAP_WIDTH %>";
-            const MAP_HEIGHT = "<%= MAP_HEIGHT %>";
-            const PIXEL_SIZE = "<%= PIXEL_SIZE %>";
-            const CAMERA_SPEED = "<%= CAMERA_SPEED %>";
-        </script>
-        <script src="/client/js/kineticScrolling.min.js"></script>
+        <!--<script src="/client/js/kineticScrolling.min.js"></script>-->
         <script src="/client/js/floatingText.min.js"></script>
         <script src="/client/js/game.js"></script>
 	</head>
@@ -38,7 +32,7 @@
 				</div>
 				<br>
 				<div class="form-group">
-					<input id="name" class="form-control" type="text" maxlength="<%= MAX_NAME_LENGTH %>" placeholder="Name Your Snake" value="">
+					<input id="name" class="form-control" type="text" maxlength="16" placeholder="Name Your Snake" value="">
 				</div>
 				<div class="mb-2">
 					<input id="btn_play" class="form-control btn btn-success active" type="button" value="Play">
