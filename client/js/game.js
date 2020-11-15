@@ -46,7 +46,7 @@ let elements = {};
 let startTime;
 
 
-const decode = (msg) => {
+const decode = (msg = '') => {
     return JSON.parse(msg);
 };
 const encode = (msg = {}) => {

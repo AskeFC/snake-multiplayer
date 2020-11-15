@@ -463,14 +463,14 @@ const disconnectSocket = (id) => {
 const uWS = require('uWebSockets.js');
 const decode = (msg = []) => {
     const tmpMsg = msg;
-    const buffer = Buffer.from(tmpMsg);
-    const str = buffer.toString('utf-8');
+    const decoder = new TextDecoder('utf8');
+    const str = decoder.decode(tmpMsg);
     return JSON.parse(str);
 };
 const encode = (msg = {}) => {
     const strMsg = JSON.stringify(msg);
-    const buffer = Buffer.from(strMsg, 'utf8');
-    return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+    const encoder = new TextEncoder();
+    return encoder.encode(strMsg);
 };
 const msgTypeMap = {
     0: (ws, msg) => { // keypress
