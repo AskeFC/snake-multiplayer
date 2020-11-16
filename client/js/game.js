@@ -10,7 +10,7 @@ let CAMERA_SPEED = 0.25;
 let MAX_STARS = 2500;
 
 let PLAYER_ID = -1;
-let WORLD_SCALE = 1.0;
+let WORLD_SCALE = 1.2;
 let isMobile = false;
 
 const pixelRatio = window.devicePixelRatio;
@@ -185,6 +185,7 @@ const create = () => {
     if (!isMobile) {
         game.create.grid('grid', MAP_WIDTH * PIXEL_SIZE * pixelRatio, MAP_HEIGHT * PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, 'rgba(255,255,255,0.2)', true, () => {
             grid = game.add.image(0, 0, 'grid', 0);
+            grid.autoCull = true;
             map.add(grid);
         });
     };
@@ -192,6 +193,7 @@ const create = () => {
 	game.camera.x = game.world.centerX;
 	game.camera.y = game.world.centerY;
 	game.camera.roundPx = true;
+    game.camera.fadeIn(0x000000, 9000, true, 1);
 	cameraFollow = game.add.sprite(game.world.centerX, game.world.centerY);
 	// game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
 
@@ -204,6 +206,7 @@ const create = () => {
 	g.drawRect(0, (MAP_HEIGHT - 1) * PIXEL_SIZE, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 	g.drawRect((MAP_WIDTH - 1) * PIXEL_SIZE, 0, (MAP_HEIGHT) * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
 	g.endFill();
+    g.autoCull = true;
     map.add(g);
 
     const randomCoordsOffGrid = () => {
@@ -229,6 +232,7 @@ const create = () => {
         s.beginFill(0xFFFFFF, tmpItem.b);
         s.drawCircle(tmpItem.x, tmpItem.y, tmpItem.d);
         s.endFill();
+        s.autoCull = true;
         map.add(s);
     };
 
@@ -263,10 +267,10 @@ const create = () => {
             numpadPlus: Phaser.Keyboard.NUMPAD_ADD
         });
         toolKeys.g.onDown.add(() => { grid.visible = !grid.visible; });
-        toolKeys.minus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-        toolKeys.plus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-        toolKeys.numpadMinus.onDown.add(() => { WORLD_SCALE -= 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
-        toolKeys.numpadPlus.onDown.add(() => { WORLD_SCALE += 0.1; game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE); });
+        toolKeys.minus.onDown.add(() => { game.camera.scale.x -= 0.1; game.camera.scale.y -= 0.1; });
+        toolKeys.plus.onDown.add(() => { game.camera.scale.x += 0.1; game.camera.scale.y += 0.1; });
+        toolKeys.numpadMinus.onDown.add(() => { game.camera.scale.x -= 0.1; game.camera.scale.y -= 0.1; });
+        toolKeys.numpadPlus.onDown.add(() => { game.camera.scale.x += 0.1; game.camera.scale.y += 0.1; });
 
         arrowKeys = game.input.keyboard.createCursorKeys();
         wasdKeys = game.input.keyboard.addKeys({
@@ -366,7 +370,8 @@ const death = (data) => {
         setTimeout(() => { elements.playerInfo.style.display = 'none'; }, 1000);
 		elements.btnPlay.focus();
 	}, 1000);
-    game.camera.target = null;
+    game.camera.shake();
+    game.camera.unfollow();
 };
 
 // socket.on('spawn', (data) => {
@@ -409,6 +414,7 @@ const gamestate = (data) => {
             const g = game.add.sprite((foodData.x * PIXEL_SIZE) - 1, (foodData.y * PIXEL_SIZE) - 1, 'FoodType' + foodData.type);
             g.width = PIXEL_SIZE * pixelRatio + 4;
             g.height = PIXEL_SIZE * pixelRatio + 4;
+            g.autoCull = true;
             food.add(g);
         };
 	};
@@ -420,6 +426,7 @@ const gamestate = (data) => {
 		g.beginFill(hslToHex(tail.color, 100, 25), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
+        g.autoCull = true;
         tails.add(g);
 	};
 
@@ -457,6 +464,7 @@ const gamestate = (data) => {
 		g.beginFill(hslToHex(player.color, 100, 50), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
+        g.autoCull = true;
         players.add(g);
 
 		const t = game.add.text(playerX, playerY - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
@@ -471,6 +479,7 @@ const gamestate = (data) => {
                 strokeThickness: 9
             });
         };
+        t.autoCull = true;
         names.add(t);
 	};
 };
