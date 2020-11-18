@@ -46,8 +46,11 @@ let elements = {};
 let startTime;
 
 
-const decode = (msg = '') => {
-    return JSON.parse(msg);
+const decode = (msg = []) => {
+    const tmpMsg = msg;
+    const decoder = new TextDecoder('utf8');
+    const str = decoder.decode(tmpMsg);
+    return JSON.parse(str);
 };
 const encode = (msg = {}) => {
     const strMsg = JSON.stringify(msg);
@@ -57,7 +60,7 @@ const encode = (msg = {}) => {
 };
 
 const ws = new WebSocket('ws://' + window.location.host + ':1337');
-ws.binaryType = 'ArrayBuffer';
+ws.binaryType = 'arraybuffer';
 ws.onerror = (evt) => {
     console.log('error', evt);
 };
@@ -133,71 +136,73 @@ const emitKeyPress = (inputId) => {
 
 /* Init game engine*/
 const preload = () => {
-    isMobile = game.device.touch;
+    const self = game;
+    isMobile = self.device.touch;
 //    isMobile = (game.device.touch && !game.device.mspointer);
-	game.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
-	game.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
-	game.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
-	game.load.image('FoodType3', '/client/img/sprite/FoodType3.png');
-	game.load.image('FoodType4', '/client/img/sprite/FoodType4.png');
-	game.load.image('FoodType5', '/client/img/sprite/FoodType5.png');
-	game.load.image('FoodType6', '/client/img/sprite/FoodType6.png');
-	game.load.image('FoodType7', '/client/img/sprite/FoodType7.png');
-	game.load.image('FoodType8', '/client/img/sprite/FoodType8.png');
-	game.load.image('FoodType9', '/client/img/sprite/FoodType9.png');
-	game.load.image('FoodType10', '/client/img/sprite/FoodType10.png');
-	game.load.image('FoodType11', '/client/img/sprite/FoodType11.png');
-	game.load.image('FoodType12', '/client/img/sprite/FoodType12.png');
+	self.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
+	self.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
+	self.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
+	self.load.image('FoodType3', '/client/img/sprite/FoodType3.png');
+	self.load.image('FoodType4', '/client/img/sprite/FoodType4.png');
+	self.load.image('FoodType5', '/client/img/sprite/FoodType5.png');
+	self.load.image('FoodType6', '/client/img/sprite/FoodType6.png');
+	self.load.image('FoodType7', '/client/img/sprite/FoodType7.png');
+	self.load.image('FoodType8', '/client/img/sprite/FoodType8.png');
+	self.load.image('FoodType9', '/client/img/sprite/FoodType9.png');
+	self.load.image('FoodType10', '/client/img/sprite/FoodType10.png');
+	self.load.image('FoodType11', '/client/img/sprite/FoodType11.png');
+	self.load.image('FoodType12', '/client/img/sprite/FoodType12.png');
     if (isMobile) {
-        game.load.image('uiButtons', '/client/img/game/uiButtons.png');
+        self.load.image('uiButtons', '/client/img/game/uiButtons.png');
     };
 //    game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
 };
 
 const create = () => {
+    const self = game;
     if (isMobile) {
         WORLD_SCALE = 2.0;
     };
-    game.stage.smoothed = false;
-    game.stage.backgroundColor = "#000";
-    game.stage.disableVisibilityChange = true;
-    game.world.useHandCursor = true;
-    game.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
-    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+    self.stage.smoothed = false;
+    self.stage.backgroundColor = "#000";
+    self.stage.disableVisibilityChange = true;
+    self.world.useHandCursor = true;
+    self.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
+    self.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
 
-	game.scale.parentIsWindow = false;
+	self.scale.parentIsWindow = false;
 
-    map = game.add.group();
-	food = game.add.group();
-	tails = game.add.group();
-	players = game.add.group();
-	names = game.add.group();
-    ui = game.add.group();
-    game.world.sendToBack(map);
-    game.world.bringToTop(food);
-    game.world.bringToTop(tails);
-    game.world.bringToTop(players);
-    game.world.bringToTop(names);
-    game.world.bringToTop(ui);
+    map = self.add.group();
+	food = self.add.group();
+	tails = self.add.group();
+	players = self.add.group();
+	names = self.add.group();
+    ui = self.add.group();
+    self.world.sendToBack(map);
+    self.world.bringToTop(food);
+    self.world.bringToTop(tails);
+    self.world.bringToTop(players);
+    self.world.bringToTop(names);
+    self.world.bringToTop(ui);
 
 	// backgroundSprite = game.add.tileSprite(0, 0, MAP_WIDTH * ratioPixelSize, MAP_HEIGHT * ratioPixelSize, 'background1');
     // backgroundSprite.alpha = 1;
     if (!isMobile) {
-        game.create.grid('grid', MAP_WIDTH * PIXEL_SIZE * pixelRatio, MAP_HEIGHT * PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, 'rgba(255,255,255,0.2)', true, () => {
-            grid = game.add.image(0, 0, 'grid', 0);
+        self.create.grid('grid', MAP_WIDTH * PIXEL_SIZE * pixelRatio, MAP_HEIGHT * PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, PIXEL_SIZE * pixelRatio, 'rgba(255,255,255,0.2)', true, () => {
+            grid = self.add.image(0, 0, 'grid', 0);
             grid.autoCull = true;
             map.add(grid);
         });
     };
 
-	game.camera.x = game.world.centerX;
-	game.camera.y = game.world.centerY;
-	game.camera.roundPx = true;
-    game.camera.fadeIn(0x000000, 9000, true, 1);
-	cameraFollow = game.add.sprite(game.world.centerX, game.world.centerY);
+	self.camera.x = self.world.centerX;
+	self.camera.y = self.world.centerY;
+	self.camera.roundPx = true;
+    self.camera.fadeIn(0x000000, 9000, true, 1);
+	cameraFollow = self.add.sprite(self.world.centerX, self.world.centerY);
 	// game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
 
-	let g = game.add.graphics(0, 0);
+	let g = self.add.graphics(0, 0);
 
 	g.beginFill(0xFF0000, 0.5);
 	g.drawRect(0, 0, MAP_WIDTH * PIXEL_SIZE, PIXEL_SIZE);
@@ -228,7 +233,7 @@ const create = () => {
 
     for (let i = STARS.length - 1; i > -1; --i) {
         const tmpItem = STARS[i];
-        const s = game.add.graphics(0, 0);
+        const s = self.add.graphics(0, 0);
         s.beginFill(0xFFFFFF, tmpItem.b);
         s.drawCircle(tmpItem.x, tmpItem.y, tmpItem.d);
         s.endFill();
@@ -237,18 +242,18 @@ const create = () => {
     };
 
     if (isMobile) {
-        game.input.pointer1 = game.input.addPointer();
-        game.input.pointer2 = game.input.addPointer();
-        game.input.pointer3 = game.input.addPointer();
-        game.input.pointer4 = game.input.addPointer();
-        game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
-        game.scale.forceOrientation(true, false);
+        self.input.pointer1 = self.input.addPointer();
+        self.input.pointer2 = self.input.addPointer();
+        self.input.pointer3 = self.input.addPointer();
+        self.input.pointer4 = self.input.addPointer();
+        self.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
+        self.scale.forceOrientation(true, false);
         // game.scale.startFullScreen(false, false, { navigationUI: 'hide' });
         // game.scale.enterIncorrectOrientation(callback, this);
         // game.scale.leaveIncorrectOrientation(callback, this);
         // game.scale.onOrientationChange.add(() => { console.log(game.scale.screenOrientation); });
         // 'portrait-primary', 'landscape-primary', 'portrait-secondary', 'landscape-secondary'
-        uiButton = game.add.button(0, 0, 'uiButtons', (evt) => {
+        uiButton = self.add.button(0, 0, 'uiButtons', (evt) => {
             console.log(evt);
         });
         uiButton.anchor.set(0.5, 0.5);
@@ -259,7 +264,7 @@ const create = () => {
         uiButton.alpha = 0.5;
         ui.add(uiButton);
     } else {
-        toolKeys = game.input.keyboard.addKeys({
+        toolKeys = self.input.keyboard.addKeys({
             g: Phaser.Keyboard.G,
             minus: Phaser.Keyboard.MINUS,
             plus: Phaser.Keyboard.PLUS,
@@ -272,8 +277,8 @@ const create = () => {
         toolKeys.numpadMinus.onDown.add(() => { game.camera.scale.x -= 0.1; game.camera.scale.y -= 0.1; });
         toolKeys.numpadPlus.onDown.add(() => { game.camera.scale.x += 0.1; game.camera.scale.y += 0.1; });
 
-        arrowKeys = game.input.keyboard.createCursorKeys();
-        wasdKeys = game.input.keyboard.addKeys({
+        arrowKeys = self.input.keyboard.createCursorKeys();
+        wasdKeys = self.input.keyboard.addKeys({
             up: Phaser.Keyboard.W,
             down: Phaser.Keyboard.S,
             left: Phaser.Keyboard.A,
@@ -289,7 +294,7 @@ const create = () => {
         wasdKeys.left.onDown.add(() => { emitKeyPress(3); });
         wasdKeys.right.onDown.add(() => { emitKeyPress(1); });
 
-        powerKeys = game.input.keyboard.addKeys({
+        powerKeys = self.input.keyboard.addKeys({
             shift: Phaser.Keyboard.SHIFT
         });
         powerKeys.shift.onDown.add(() => { emitKeyPress(4); });
@@ -299,49 +304,50 @@ const create = () => {
 };
 
 const update = () => {
+    const self = game;
     if (isMobile) {
-        if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
-            if (game.origPinchPoint1 && game.origPinchPoint2) {
-                if ((game.origPinchPoint1.x >= game.input.pointer1.position.x)
-                    && (game.origPinchPoint2.x >= game.input.pointer2.position.x)
-                    && (game.origPinchPoint1.y >= game.input.pointer1.position.y)
-                    && (game.origPinchPoint2.y >= game.input.pointer2.position.y))
+        if (self.input.pointer1.isDown && self.input.pointer2.isDown) {
+            if (self.origPinchPoint1 && self.origPinchPoint2) {
+                if ((self.origPinchPoint1.x >= self.input.pointer1.position.x)
+                    && (self.origPinchPoint2.x >= self.input.pointer2.position.x)
+                    && (self.origPinchPoint1.y >= self.input.pointer1.position.y)
+                    && (self.origPinchPoint2.y >= self.input.pointer2.position.y))
                 {
                     WORLD_SCALE -= 0.1;
-                    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
-                } else if ((game.origPinchPoint1.x <= game.input.pointer1.position.x)
-                    && (game.origPinchPoint2.x <= game.input.pointer2.position.x)
-                    && (game.origPinchPoint1.y <= game.input.pointer1.position.y)
-                    && (game.origPinchPoint2.y <= game.input.pointer2.position.y))
+                    self.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+                } else if ((self.origPinchPoint1.x <= self.input.pointer1.position.x)
+                    && (self.origPinchPoint2.x <= self.input.pointer2.position.x)
+                    && (self.origPinchPoint1.y <= self.input.pointer1.position.y)
+                    && (self.origPinchPoint2.y <= self.input.pointer2.position.y))
                 {
                     WORLD_SCALE += 0.1;
-                    game.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+                    self.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
                 };
             };
-            game.origPinchPoint1 = game.input.pointer1.position.clone();
-            game.origPinchPoint2 = game.input.pointer2.position.clone();
-        } else  if (game.input.pointer1.isDown) {
-            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
-                game.camera.x += game.origDragPoint.x - game.input.pointer1.position.x;
-                game.camera.y += game.origDragPoint.y - game.input.pointer1.position.y;
+            self.origPinchPoint1 = self.input.pointer1.position.clone();
+            self.origPinchPoint2 = self.input.pointer2.position.clone();
+        } else  if (self.input.pointer1.isDown) {
+            if (self.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+                self.camera.x += self.origDragPoint.x - self.input.pointer1.position.x;
+                self.camera.y += self.origDragPoint.y - self.input.pointer1.position.y;
             };
-            game.origDragPoint = game.input.pointer1.position.clone();	// set new drag origin to current position
+            self.origDragPoint = self.input.pointer1.position.clone();	// set new drag origin to current position
         } else {
-            game.origDragPoint = null;
-            game.origPinchPoint1 = null;
-            game.origPinchPoint2 = null;
+            self.origDragPoint = null;
+            self.origPinchPoint1 = null;
+            self.origPinchPoint2 = null;
         };
     } else {
-        game.input.enabled = (game.input.activePointer.withinGame && (document.activeElement !== elements.name));
-        if (!game.input.enabled) { return; };
-        if (game.input.activePointer.isDown) {
-            if (game.origDragPoint) { // move the camera by the amount the mouse has moved since last update
-                game.camera.x += game.origDragPoint.x - game.input.activePointer.position.x;
-                game.camera.y += game.origDragPoint.y - game.input.activePointer.position.y;
+        self.input.enabled = (self.input.activePointer.withinGame && (document.activeElement !== elements.name));
+        if (!self.input.enabled) { return; };
+        if (self.input.activePointer.isDown) {
+            if (self.origDragPoint) { // move the camera by the amount the mouse has moved since last update
+                self.camera.x += self.origDragPoint.x - self.input.activePointer.position.x;
+                self.camera.y += self.origDragPoint.y - self.input.activePointer.position.y;
             };
-            game.origDragPoint = game.input.activePointer.position.clone();	// set new drag origin to current position
+            self.origDragPoint = self.input.activePointer.position.clone();	// set new drag origin to current position
         } else {
-            game.origDragPoint = null;
+            self.origDragPoint = null;
         };
     };
 };
@@ -370,8 +376,9 @@ const death = (data) => {
         setTimeout(() => { elements.playerInfo.style.display = 'none'; }, 1000);
 		elements.btnPlay.focus();
 	}, 1000);
-    game.camera.shake();
-    game.camera.unfollow();
+    const self = game;
+    self.camera.shake();
+    self.camera.unfollow();
 };
 
 // socket.on('spawn', (data) => {
@@ -382,11 +389,12 @@ const spawn = (data) => {
     setTimeout(() => { elements.menu.style.display = 'none'; }, 500);
     elements.playerInfo.classList.add('ms500', 'fadeIn');
     elements.playerInfo.style.display = 'inline-block';
+    const self = game;
 	try {
-		game.camera.follow(null, Phaser.Camera.FOLLOW_LOCKON, 1, 1);
-		game.camera.x = data.x * PIXEL_SIZE;
-		game.camera.y = data.y * PIXEL_SIZE;
-		game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
+		self.camera.follow(null, Phaser.Camera.FOLLOW_LOCKON, 1, 1);
+		self.camera.x = data.x * PIXEL_SIZE;
+		self.camera.y = data.y * PIXEL_SIZE;
+		self.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
 	} catch(err) {
 		console.log(err);
 	};
@@ -406,23 +414,24 @@ const gamestate = (data) => {
 	};
 
 	elements.leaderboardContent.innerHTML = leaderboardcontent;
+    const self = game;
 
 	food.removeAll();
 	for (let i = data.food.length - 1; i > -1; --i) {
 		const foodData = data.food[i];
-        if (foodData && foodData.type) {
+        (foodData && foodData.type && (() => {
             const g = game.add.sprite((foodData.x * PIXEL_SIZE) - 1, (foodData.y * PIXEL_SIZE) - 1, 'FoodType' + foodData.type);
             g.width = PIXEL_SIZE * pixelRatio + 4;
             g.height = PIXEL_SIZE * pixelRatio + 4;
             g.autoCull = true;
             food.add(g);
-        };
+        })());
 	};
 
 	tails.removeAll();
 	for (let i = data.playerTails.length - 1; i > -1; --i) {
 		const tail = data.playerTails[i];
-		const g = game.add.graphics(tail.x * PIXEL_SIZE, tail.y * PIXEL_SIZE);
+		const g = self.add.graphics(tail.x * PIXEL_SIZE, tail.y * PIXEL_SIZE);
 		g.beginFill(hslToHex(tail.color, 100, 25), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
@@ -437,12 +446,12 @@ const gamestate = (data) => {
         const playerX = player.x * PIXEL_SIZE;
         const playerY = player.y * PIXEL_SIZE;
 
-		if (player.id === PLAYER_ID) {
+		((player.id === PLAYER_ID) && (() => {
 			cameraFollow.x = playerX;
 			cameraFollow.y = playerY;
             const prevScore = elements.playerScore.textContent;
             const score = player.score;
-            if (prevScore !== score) {
+            ((prevScore !== score) && (() => {
                 const floatingScore = new FloatingText(game, {
                     text: score - prevScore,
                     animation: "smoke",
@@ -455,19 +464,19 @@ const gamestate = (data) => {
                     y: playerY,
                     timeToLive: 1500 // ms
                 });
-            };
+            })());
 			elements.playerScore.textContent = score;
 			elements.position.textContent = "X: " + playerX + " Y: " + playerY;
-		};
+		})());
 
-		const g = game.add.graphics(playerX, playerY);
+		const g = self.add.graphics(playerX, playerY);
 		g.beginFill(hslToHex(player.color, 100, 50), 1);
 		g.drawRect(0, 0, PIXEL_SIZE, PIXEL_SIZE);
 		g.endFill();
         g.autoCull = true;
         players.add(g);
 
-		const t = game.add.text(playerX, playerY - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
+		const t = self.add.text(playerX, playerY - 10, player.name, {fill: '#FFF', fontSize: '16px', stroke: '#000', strokeThickness: 1});
 		t.anchor.setTo(0.5);
         t.smoothed = false;
         t.resolution = window.devicePixelRatio;

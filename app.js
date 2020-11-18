@@ -157,7 +157,7 @@ const Player = (id) => {
 			SOCKET_LIST[self.id].send(encode({
                 t: 1,
 				score: self.score
-			}));
+			}), true, true);
 //			SOCKET_LIST[self.id].send('death', JSON.stringify({
 //				score: self.score
 //			}));
@@ -354,7 +354,7 @@ const update = async () => {
         players: playerPack,
         playerTails: tailPack,
         food: foodPack
-    }));
+    }), true, true);
 //    tmpApp.publish('gamestate', JSON.stringify({
 //        t: 0,
 //        leaderboard: leaderboard,
@@ -372,7 +372,7 @@ const spawnPlayer = (id) => {
             t: 2,
             x: PLAYER_LIST[id].x,
             y: PLAYER_LIST[id].y
-        }));
+        }), true, true);
 //        SOCKET_LIST[id].send(JSON.stringify({
 //            t: 2,
 //            x: PLAYER_LIST[id].x,
@@ -487,7 +487,7 @@ const msgTypeMap = {
     },
     1: (ws) => { // ping
         // ws.send(JSON.stringify({t: 4}));
-        ws.send(encode({t: 4}));
+        ws.send(encode({t: 4}), true, true);
     },
     2: (ws, msg) => { // spawn
 		try {
@@ -527,7 +527,7 @@ const tmpApp = uWS.App()
                 t: 3,
                 pId: ws.id,
                 conf: config
-            }));
+            }), true, true);
             ws.subscribe('gamestate');
             console.log(colours.cyan('[Snake] Socket connection with id ' + ws.id));
         },
