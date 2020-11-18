@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
 });
 app.use('/client', express.static(__dirname + '/client'));
 
-if (process.env.PORT == undefined) {
+if (process.env.PORT === undefined) {
 	console.log(colours.blue('[Snake] No port defined using default (80)'));
 };
 
@@ -41,9 +41,13 @@ console.log(colours.green('[Snake] Http started on port ' + port));
 
 //---------- Game variables ----------
 let SOCKET_LIST = {};
-let PLAYER_LIST = {};
-let FOOD_LIST = {};
+let PLAYER_LIST = [];
+let FOOD_LIST = [];
 let INVINCIBLE_FOOD_LIST = {};
+
+const randomId = () => {
+    return parseInt(Math.random().toString().substring(2), 10);
+};
 
 const randomName = () => {
     const amount = ((Math.random() * 3) + 1) | 0;
@@ -93,12 +97,12 @@ const Food = (id, x, y, type) => {
 };
 
 const spawnFood = (type) => {
-	const id = Math.random();
+	const id = randomId();
     const tmpCoords = randomCoordsOnGrid();
 	FOOD_LIST[id] = Food(id, tmpCoords.x, tmpCoords.y, type || null);
 };
 const spawnInvincibleFood = () => {
-	const id = Math.random();
+	const id = randomId();
     const tmpCoords = randomCoordsOnGrid();
 	INVINCIBLE_FOOD_LIST[id] = Food(id, tmpCoords.x, tmpCoords.y, 1);
 };
@@ -183,66 +187,68 @@ const Player = (id) => {
 			return;
 		};
 
-        if (!self.invincible) {
-            for (let p in PLAYER_LIST) {
-                const player = PLAYER_LIST[p];
-                for (let t in player.tailBlocks) {
-                    const pTail = player.tailBlocks[t];
-                    if ((self.x === pTail.x) && (self.y === pTail.y)) {
-                        self.die();
-                        player.score += (5 + (self.score / 2));
-                        return;
-                    };
+        if (self.invincible) {
+            return;
+        };
+
+        for (let i = PLAYER_LIST.length - 1; i > -1; --i) {
+            const player = PLAYER_LIST[i];
+            for (let c = player.tailBlocks.length -1; c > -1; --c) {
+                const pTail = player.tailBlocks[c];
+                if ((self.x === pTail.x) && (self.y === pTail.y)) {
+                    self.die();
+                    player.score += (5 + (self.score / 2));
+                    return;
                 };
             };
+        };
 
-            for (let f in FOOD_LIST) {
-                const food = FOOD_LIST[f];
-                if (self.x === food.x && self.y === food.y) {
-                    switch (food.type) {
-                        // case 0: // not used
-                        // case 1: // supernova - invincible
-                        case 2: // rock - 1
-                        case 3: // rock - 1
-                        case 4: // rock - 1
-                        case 5: // purple - 2 points
-                        case 6: // green - 3 points
-                        case 7: // almost habitable - 4 points
-                        case 8: // earth - 5 points
-                        case 9: // red dwarf - minus 1
-                            delete FOOD_LIST[food.id];
-                            self.score = self.score + typeScoreMap[food.type];
-                            break;
-                        case 10: // quasar - one-time speed
-                            delete FOOD_LIST[food.id];
-                            self.hasQuasar = true;
-                            break;
-                        case 11: // black hole - no tailblocks or die
-                            if (self.tailBlocks.length < 3) {
-                                self.die();
-                            };
-                            self.tailBlocks.length = 0;
-                            self.score = (self.score > 0) ? 0 : self.score;
-                            break;
-                        case 12: // worm hole - random teleport
-                            delete FOOD_LIST[food.id];
-                            self.x = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
-                            self.y = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
-                            // self.direction = Math.floor(Math.random() * 4);
-                            break;
-                        default:
-                    };
+        for (let f in FOOD_LIST) {
+            const food = FOOD_LIST[f];
+            (self.x === food.x && self.y === food.y) && (() => {
+                switch (food.type) {
+                    // case 0: // not used
+                    // case 1: // supernova - invincible
+                    case 2: // rock - 1
+                    case 3: // rock - 1
+                    case 4: // rock - 1
+                    case 5: // purple - 2 points
+                    case 6: // green - 3 points
+                    case 7: // almost habitable - 4 points
+                    case 8: // earth - 5 points
+                    case 9: // red dwarf - minus 1
+                        delete FOOD_LIST[food.id];
+                        self.score = self.score + typeScoreMap[food.type];
+                        break;
+                    case 10: // quasar - one-time speed
+                        delete FOOD_LIST[food.id];
+                        self.hasQuasar = true;
+                        break;
+                    case 11: // black hole - no tailblocks or die
+                        if (self.tailBlocks.length < 3) {
+                            self.die();
+                        };
+                        self.tailBlocks.length = 0;
+                        self.score = (self.score > 0) ? 0 : self.score;
+                        break;
+                    case 12: // worm hole - random teleport
+                        delete FOOD_LIST[food.id];
+                        self.x = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
+                        self.y = ((Math.random() * (config.MAP_WIDTH - 20)) + 10) | 0;
+                        // self.direction = Math.floor(Math.random() * 4);
+                        break;
+                    default:
                 };
-            };
+            })();
+        };
 
-            for (let f in INVINCIBLE_FOOD_LIST) {
-                const food = INVINCIBLE_FOOD_LIST[f];
-                if (self.x === food.x && self.y === food.y) {
-                    delete INVINCIBLE_FOOD_LIST[food.id];
-                    self.invincible = true;
-                    spawnInvincibleFood();
-                    setTimeout(() => { self.invincible = false; }, self.tailBlocks.length * 1000);
-                };
+        for (let f in INVINCIBLE_FOOD_LIST) {
+            const food = INVINCIBLE_FOOD_LIST[f];
+            if (self.x === food.x && self.y === food.y) {
+                delete INVINCIBLE_FOOD_LIST[food.id];
+                self.invincible = true;
+                spawnInvincibleFood();
+                setTimeout(() => { self.invincible = false; }, self.tailBlocks.length * 1000);
             };
         };
 	};
@@ -281,36 +287,33 @@ const update = async () => {
 	for (let p in PLAYER_LIST) {
 		const player = PLAYER_LIST[p];
 
-		if (player.inGame) {
-            if (!halfTime) {
-                player.update();
-            } else if (halfTime && player.usingQuasar) {
-                player.update();
-            };
+        if (!player.inGame) { // Player died
+            continue;
+        };
+        ((!halfTime) && (player.update())) || ((halfTime && player.usingQuasar) && (player.update()));
+        if (!player.inGame) { // Player died
+            continue;
+        };
 
-			if (!player.inGame) { // Player died
-				continue;
-			};
-			playerPack[playerPack.length] = {
-				id: player.id,
-				x: player.x,
-				y: player.y,
-				name: player.name,
-				score: player.score,
-				color: player.color,
-                invincible: player.invincible,
-                usingQuasar: player.usingQuasar
-			};
-			leaderboardPlayers[leaderboardPlayers.length] = player;
-			for (let t in player.tailBlocks) {
-				const tail = player.tailBlocks[t];
-				tailPack[tailPack.length] = {
-					x: tail.x,
-					y: tail.y,
-					color: tail.color
-				};
-			};
-		};
+        playerPack[playerPack.length] = {
+            id: player.id,
+            x: player.x,
+            y: player.y,
+            name: player.name,
+            score: player.score,
+            color: player.color,
+            invincible: player.invincible,
+            usingQuasar: player.usingQuasar
+        };
+        leaderboardPlayers[leaderboardPlayers.length] = player;
+        for (let i = player.tailBlocks.length -1; i > -1; --i) {
+            const tail = player.tailBlocks[i];
+            tailPack[tailPack.length] = {
+                x: tail.x,
+                y: tail.y,
+                color: tail.color
+            };
+        };
 	};
 
 	for (let f in FOOD_LIST) {
@@ -348,14 +351,14 @@ const update = async () => {
 //        food: foodPack
 //    });
 
-    tmpApp.publish('gamestate', encode({
+    wsApp.publish('gamestate', encode({
         t: 0,
         leaderboard: leaderboard,
         players: playerPack,
         playerTails: tailPack,
         food: foodPack
     }), true, true);
-//    tmpApp.publish('gamestate', JSON.stringify({
+//    wsApp.publish('gamestate', JSON.stringify({
 //        t: 0,
 //        leaderboard: leaderboard,
 //        players: playerPack,
@@ -387,7 +390,7 @@ const spawnPlayer = (id) => {
 
 const disconnectSocket = (id) => {
 	try {
-		if (PLAYER_LIST[id] != undefíned) {
+		if (PLAYER_LIST[id] !== undefíned) {
 			PLAYER_LIST[id].deleteTail();
 			delete PLAYER_LIST[id];
 		};
@@ -475,15 +478,15 @@ const encode = (msg = {}) => {
 const msgTypeMap = {
     0: (ws, msg) => { // keypress
         const inputId = msg.key;
-        const player =PLAYER_LIST[ws.id];
+        const player = PLAYER_LIST[ws.id];
         (inputId < 4) && (!(2 === Math.abs(inputId - player.lastDirection)) && (player.direction = inputId));
-        if ((inputId === 4) && player.hasQuasar && !player.usingQuasar) {
+        (((inputId === 4) && player.hasQuasar && !player.usingQuasar) && (() => {
             player.usingQuasar = true;
             setTimeout(() => {
                 player.usingQuasar = false;
                 player.hasQuasar = false;
             }, 10000);
-        };        
+        })());
     },
     1: (ws) => { // ping
         // ws.send(JSON.stringify({t: 4}));
@@ -491,11 +494,12 @@ const msgTypeMap = {
     },
     2: (ws, msg) => { // spawn
 		try {
-			if (!PLAYER_LIST[ws.id].inGame) {
-                const name = msg.name;
-                PLAYER_LIST[ws.id].name = ((name == undefined) || (name.length < 1 || name.length > config.MAX_NAME_LENGTH)) ? randomName() : name;
-				spawnPlayer(ws.id);
+			if (PLAYER_LIST[ws.id].inGame) {
+                return;
 			};
+            const name = msg.name;
+            PLAYER_LIST[ws.id].name = ((name === undefined) || (name.length < 1 || name.length > config.MAX_NAME_LENGTH)) ? randomName() : name;
+            spawnPlayer(ws.id);
 		} catch(err) {
 			if (debug) {
 				throw err;
@@ -503,88 +507,84 @@ const msgTypeMap = {
 		};
     }
 };
-//const tmpApp = uWS.SSLApp({
-//        cert_file_name: '/certs/spacesnake.askefc.net.crt',
-//        key_file_name: '/certs/spacesnake.askefc.net.key'
-//    })
-const tmpApp = uWS.App()
-    .ws('/*', {
-        // config
-        compression: 1,
-        maxPayloadLength: 16 * 1024 * 1024,
-        idleTimeout: 60,
 
-        open: (ws, req) => {
-            // this handler is called when a client opens a ws connection with the server
-            // console.log('open', ws, req);
-            ws.id = parseInt(Math.random().toString().substring(2), 10);
-            SOCKET_LIST[ws.id] = ws;
+const prod = ('prod' === process.env.NODE_ENV);
+const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod && {
+    cert_file_name: process.env.MY_CERT,
+    key_file_name: process.env.MY_CERT_KEY
+})});
 
-            const player = Player(ws.id);
-            PLAYER_LIST[ws.id] = player;
+wsApp.ws('/*', {
+    // config
+    compression: 1,
+    maxPayloadLength: 16 * 1024 * 1024,
+    idleTimeout: 120,
 
-            ws.send(encode({
-                t: 3,
-                pId: ws.id,
-                conf: config
-            }), true, true);
-            ws.subscribe('gamestate');
-            console.log(colours.cyan('[Snake] Socket connection with id ' + ws.id));
-        },
-        
-        ping: (ws) => {
-            console.log('ping', ws);
-        },
-        pong: (ws) => {
-            console.log('pong', ws);
-        },
-        drain: (ws) => {
-            console.log('drain', ws);
-        },
+    open: (ws, req) => {
+        // this handler is called when a client opens a ws connection with the server
+        // console.log('open', ws, req);
+        ws.id = randomId();
+        SOCKET_LIST[ws.id] = ws;
 
-        message: (ws, message, isBinary) => {
-            // console.log('message', ws, message, isBinary);
-            // called when a client sends a message
-            // const msg = JSON.parse(decoder.decode(message));
-            const msg = decode(message);
-            // console.log('msg', ws, msg, isBinary);
-            msgTypeMap[msg.t](ws, msg);
-        },
+        const player = Player(ws.id);
+        PLAYER_LIST[ws.id] = player;
 
-        close: (ws, code, message) => {
-            // called when a ws connection is closed
-            // console.log('close', ws, code, message);
-            try {
-                if (PLAYER_LIST[ws.id].inGame) {
-                    --INVINCIBLE_FOOD_LIST.length;
-                };
-                delete PLAYER_LIST[ws.id];
-                console.log(colours.cyan('[Snake] Player with id ' + ws.id + ' disconnected'));
-                disconnectSocket(ws.id);
-            } catch(err) {
-                if (debug) {
-                    throw err;
-                };
+        ws.send(encode({
+            t: 3,
+            pId: ws.id,
+            conf: config
+        }), true, true);
+        ws.subscribe('gamestate');
+        console.log(colours.cyan('[Snake] Socket connection with id ' + ws.id));
+    },
+
+    ping: (ws) => {
+        console.log('ping', ws);
+    },
+    pong: (ws) => {
+        console.log('pong', ws);
+    },
+    drain: (ws) => {
+        console.log('drain', ws);
+    },
+
+    message: (ws, message, isBinary) => {
+        // console.log('message', ws, message, isBinary);
+        // called when a client sends a message
+        // const msg = JSON.parse(decoder.decode(message));
+        const msg = decode(message);
+        // console.log('msg', ws, msg, isBinary);
+        msgTypeMap[msg.t](ws, msg);
+    },
+
+    close: (ws, code, message) => {
+        // called when a ws connection is closed
+        // console.log('close', ws, code, message);
+        try {
+            if (PLAYER_LIST[ws.id].inGame) {
+                --INVINCIBLE_FOOD_LIST.length;
             };
-        }
-    })
-    .listen(1337, (listensocket) => {
-        listensocket ?
-            console.log(colours.cyan('[Snake] Websocket listening to port 1337')) :
-            console.log(colours.cyan('[Snake] Websocket failed to listen to port 1337'));
+            delete PLAYER_LIST[ws.id];
+            console.log(colours.cyan('[Snake] Player with id ' + ws.id + ' disconnected'));
+            disconnectSocket(ws.id);
+        } catch(err) {
+            if (debug) {
+                throw err;
+            };
+        };
+    }
+})
+.listen(1337, (listensocket) => {
+    listensocket ?
+        console.log(colours.cyan('[Snake] Websocket listening to port 1337')) :
+        console.log(colours.cyan('[Snake] Websocket failed to listen to port 1337'));
 });
 
 //--------------------------------------
 
 setInterval(() => {
-    if (halfTime) {
-        update();
-    } else {
-        update();
-        if (FOOD_LIST.length < MAX_FOOD) {
-            spawnFood();
-        };
-    };
+    update();
+    ((!halfTime) && (FOOD_LIST.length < MAX_FOOD) && (spawnFood()));
     halfTime = !halfTime;
 }, 1000 / (fps * 2));
 

@@ -139,19 +139,35 @@ const preload = () => {
     const self = game;
     isMobile = self.device.touch;
 //    isMobile = (game.device.touch && !game.device.mspointer);
-	self.load.image('FoodType0', '/client/img/sprite/FoodType0.png');
-	self.load.image('FoodType1', '/client/img/sprite/FoodType1.png');
-	self.load.image('FoodType2', '/client/img/sprite/FoodType2.png');
-	self.load.image('FoodType3', '/client/img/sprite/FoodType3.png');
-	self.load.image('FoodType4', '/client/img/sprite/FoodType4.png');
-	self.load.image('FoodType5', '/client/img/sprite/FoodType5.png');
-	self.load.image('FoodType6', '/client/img/sprite/FoodType6.png');
-	self.load.image('FoodType7', '/client/img/sprite/FoodType7.png');
-	self.load.image('FoodType8', '/client/img/sprite/FoodType8.png');
-	self.load.image('FoodType9', '/client/img/sprite/FoodType9.png');
-	self.load.image('FoodType10', '/client/img/sprite/FoodType10.png');
-	self.load.image('FoodType11', '/client/img/sprite/FoodType11.png');
-	self.load.image('FoodType12', '/client/img/sprite/FoodType12.png');
+	self.load.images([
+        'FoodType0',
+        'FoodType1',
+        'FoodType2',
+        'FoodType3',
+        'FoodType4',
+        'FoodType5',
+        'FoodType6',
+        'FoodType7',
+        'FoodType8',
+        'FoodType9',
+        'FoodType10',
+        'FoodType11',
+        'FoodType12'
+    ], [
+        '/client/img/sprite/FoodType0.png',
+        '/client/img/sprite/FoodType1.png',
+        '/client/img/sprite/FoodType2.png',
+        '/client/img/sprite/FoodType3.png',
+        '/client/img/sprite/FoodType4.png',
+        '/client/img/sprite/FoodType5.png',
+        '/client/img/sprite/FoodType6.png',
+        '/client/img/sprite/FoodType7.png',
+        '/client/img/sprite/FoodType8.png',
+        '/client/img/sprite/FoodType9.png',
+        '/client/img/sprite/FoodType10.png',
+        '/client/img/sprite/FoodType11.png',
+        '/client/img/sprite/FoodType12.png'
+    ]);
     if (isMobile) {
         self.load.image('uiButtons', '/client/img/game/uiButtons.png');
     };
