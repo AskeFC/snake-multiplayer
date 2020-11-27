@@ -24,8 +24,8 @@ const {
 } = http2.constants;
 
 const certs = (prod) ? {
-    key: fs.readFileSync(environment.MY_CERT),
-    cert: fs.readFileSync(environment.MY_CERT_KEY)
+    key: fs.readFileSync(environment.MY_CERT_KEY, 'utf8'),
+    cert: fs.readFileSync(environment.MY_CERT, 'utf8')
 } : {};
 
 const server = http2.createSecureServer(certs);
