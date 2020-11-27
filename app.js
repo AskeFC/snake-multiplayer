@@ -71,11 +71,11 @@ if (prod) {
 
     server.on('error', (err) => console.error(colours.red(err)));
 
-    server.on('OCSPRequest', function(cert, issuer, callback) {
-        ocsp.getOCSPURI(cert, function(err, uri) {
-            if (err) return callback(error);
-            var req = ocsp.request.generate(cert, issuer);
-            var options = {
+    server.on('OCSPRequest', (cert, issuer, callback) => {
+        ocsp.getOCSPURI(cert, (err, uri) => {
+            if (err) { return callback(err); };
+            const req = ocsp.request.generate(cert, issuer);
+            const options = {
                 url: uri,
                 ocsp: req.data
             };
