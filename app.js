@@ -1,16 +1,37 @@
 'use strict';
 
+const environment = process.env;
+const prod = ('prod' === environment.NODE_ENV);
+
 //---------- Required modules ----------
+const http2 = require('http2');
+const fs = require('fs');
+
 const express = require('express');
 const app = module.exports = express();
 const serv = require('http').Server(app);
+
 // const io = require('socket.io')(serv, {});
 const colours = require('colors/safe');
 const { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } = require('unique-names-generator');
  
 
+const {
+    HTTP2_HEADER_PATH,
+    HTTP2_HEADER_METHOD,
+    HTTP_STATUS_NOT_FOUND,
+    HTTP_STATUS_INTERNAL_SERVER_ERROR
+} = http2.constants;
+
+const certs = (prod) ? {
+    key: fs.readFileSync(environment.MY_CERT),
+    cert: fs.readFileSync(environment.MY_CERT_KEY)
+} : {};
+
+const server = http2.createSecureServer(certs);
+
 //---------- Server settings ----------
-const fps = 3;
+const fps = 2;
 let halfTime = false;
 const MAX_FOOD = 1400;
 const config = {
@@ -23,21 +44,77 @@ const config = {
 const dictionaries = [adjectives, animals, colors, countries, names, starWars];
 
 //---------- Server startup ----------
-const port = process.env.PORT || 80;
+const port = environment.PORT || 80;
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
 
-console.log(colours.green('[Snake] Starting server...'));
-app.get('/', (req, res) => {
-	res.sendFile(__dirname + '/client/index.html');
-});
-app.use('/client', express.static(__dirname + '/client'));
+console.log(colours.green('[SpaceSnake] Starting server...'));
+if (prod) {
+    const respondToStreamError = (err, stream) => {
+        console.log(colours.red(err));
+        stream.respond({ ":status": (err.code === 'ENOENT') ? HTTP_STATUS_NOT_FOUND : HTTP_STATUS_INTERNAL_SERVER_ERROR});
+        stream.end();
+    };
 
-if (process.env.PORT === undefined) {
-	console.log(colours.blue('[Snake] No port defined using default (80)'));
+    const pushFile = (stream, file, mime) => {
+        stream.pushStream({ ":path": "/" }, { parent: stream.id }, (pushStream) => {
+            pushStream.respondWithFile(__dirname + file, {
+                'content-type': mime
+            }, {
+                onError: (err) => {
+                    respondToStreamError(err, pushStream);
+                }
+            });
+        });
+    };
+
+    server.on('error', (err) => console.error(colours.red(err)));
+
+    server.on('stream', (stream, headers) => {
+        const reqPath = headers[HTTP2_HEADER_PATH];
+        const reqMethod = headers[HTTP2_HEADER_METHOD];
+
+            // handle HTML file
+        stream.respondWithFile(__dirname + '/client/index.html', {
+            "content-type": "text/html"
+        }, {
+            onError: (err) => {
+                respondToStreamError(err, stream);
+            }
+        });
+
+        pushFile(stream, '/client/manifest.json', 'application/json');
+        pushFile(stream, '/client/css/game.css', 'text/css');
+        pushFile(stream, '/client/js/floatingText.min.js', 'text/javascript');
+        pushFile(stream, '/client/js/game.js', 'text/javascript');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType1.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType2.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType3.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
+        pushFile(stream, '/client/img/game/uiButtons.png', 'image/png');
+
+    });
+
+    server.listen(port);
+    console.log(colours.green('[SpaceSnake] Https started on port ' + port));
+} else {
+    app.get('/', (req, res) => {
+        res.sendFile(__dirname + '/client/index.html');
+    });
+    app.use('/client', express.static(__dirname + '/client'));
+
+    serv.listen(port);
+    console.log(colours.green('[SpaceSnake] Http started on port ' + port));
 };
 
-serv.listen(port);
-console.log(colours.green('[Snake] Http started on port ' + port));
 
 //---------- Game variables ----------
 let SOCKET_LIST = {};
@@ -54,7 +131,7 @@ const randomName = () => {
     return uniqueNamesGenerator({
         dictionaries: [...(() => {
             let tmpDict = [];
-            for (let i = 0; i < amount; (tmpDict[i] = dictionaries[(dictionaries.length * Math.random()) | 0]), ++i) {};
+            for (let i = amount; i > -1; (tmpDict[i] = dictionaries[(dictionaries.length * Math.random()) | 0]), --i) {};
             return tmpDict;
         })()],
         separator: ' ',
@@ -508,10 +585,9 @@ const msgTypeMap = {
     }
 };
 
-const prod = ('prod' === process.env.NODE_ENV);
 const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod && {
-    cert_file_name: process.env.MY_CERT,
-    key_file_name: process.env.MY_CERT_KEY
+    cert_file_name: environment.MY_CERT,
+    key_file_name: environment.MY_CERT_KEY
 })});
 
 wsApp.ws('/*', {
@@ -535,7 +611,7 @@ wsApp.ws('/*', {
             conf: config
         }), true, true);
         ws.subscribe('gamestate');
-        console.log(colours.cyan('[Snake] Socket connection with id ' + ws.id));
+        console.log(colours.cyan('[SpaceSnake] Socket connection with id ' + ws.id));
     },
 
     ping: (ws) => {
@@ -565,7 +641,7 @@ wsApp.ws('/*', {
                 --INVINCIBLE_FOOD_LIST.length;
             };
             delete PLAYER_LIST[ws.id];
-            console.log(colours.cyan('[Snake] Player with id ' + ws.id + ' disconnected'));
+            console.log(colours.cyan('[SpaceSnake] Player with id ' + ws.id + ' disconnected'));
             disconnectSocket(ws.id);
         } catch(err) {
             if (debug) {
@@ -576,19 +652,19 @@ wsApp.ws('/*', {
 })
 .listen(1337, (listensocket) => {
     listensocket ?
-        console.log(colours.cyan('[Snake] Websocket listening to port 1337')) :
-        console.log(colours.cyan('[Snake] Websocket failed to listen to port 1337'));
+        console.log(colours.cyan('[SpaceSnake] Websocket listening to port 1337')) :
+        console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 1337'));
 });
 
 //--------------------------------------
 
 setInterval(() => {
     update();
-    ((!halfTime) && (FOOD_LIST.length < MAX_FOOD) && (spawnFood()));
+    (!halfTime) && (Object.keys(FOOD_LIST).length < MAX_FOOD) && spawnFood();
     halfTime = !halfTime;
 }, 1000 / (fps * 2));
 
-console.log(colours.green('[Snake] Server started '));
+console.log(colours.green('[SpaceSnake] Server started '));
 if (debug) {
 	console.log('Running in debug mode');
 };
