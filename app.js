@@ -6,6 +6,7 @@ const prod = ('prod' === environment.NODE_ENV);
 //---------- Required modules ----------
 const http2 = require('http2');
 const fs = require('fs');
+const ocsp = require('ocsp');
 
 const express = require('express');
 const app = module.exports = express();
@@ -29,6 +30,7 @@ const certs = (prod) ? {
 } : {};
 
 const server = http2.createSecureServer(certs);
+const ocspCache = new ocsp.Cache();
 
 //---------- Server settings ----------
 const fps = 2;
@@ -68,6 +70,18 @@ if (prod) {
     };
 
     server.on('error', (err) => console.error(colours.red(err)));
+
+    server.on('OCSPRequest', function(cert, issuer, callback) {
+        ocsp.getOCSPURI(cert, function(err, uri) {
+            if (err) return callback(error);
+            var req = ocsp.request.generate(cert, issuer);
+            var options = {
+                url: uri,
+                ocsp: req.data
+            };
+            ocspCache.request(req.id, options, callback);
+        });
+    });
 
     server.on('stream', (stream, headers) => {
         const reqPath = headers[HTTP2_HEADER_PATH];
