@@ -3,6 +3,27 @@
 const environment = process.env;
 const prod = ('prod' === environment.NODE_ENV);
 
+const gameFiles = {
+    '/manifest.json': 'application/json',
+    '/css/game.css': 'text/css',
+    '/js/floatingText.min.js': 'text/javascript',
+    '/js/game.js': 'text/javascript',
+    '/img/sprite/FoodType0.png': 'image/png',
+    '/img/sprite/FoodType1.png': 'image/png',
+    '/img/sprite/FoodType2.png': 'image/png',
+    '/img/sprite/FoodType3.png': 'image/png',
+    '/img/sprite/FoodType4.png': 'image/png',
+    '/img/sprite/FoodType5.png': 'image/png',
+    '/img/sprite/FoodType6.png': 'image/png',
+    '/img/sprite/FoodType7.png': 'image/png',
+    '/img/sprite/FoodType8.png': 'image/png',
+    '/img/sprite/FoodType9.png': 'image/png',
+    '/img/sprite/FoodType10.png': 'image/png',
+    '/img/sprite/FoodType11.png': 'image/png',
+    '/img/sprite/FoodType12.png': 'image/png',
+    '/img/game/uiButtons.png': 'image/png'
+};
+
 //---------- Required modules ----------
 const http2 = require('http2');
 const fs = require('fs');
@@ -58,7 +79,7 @@ if (prod) {
     };
 
     const pushFile = (stream, file, mime) => {
-        stream.pushStream({ ":path": "/" }, { parent: stream.id }, (pushStream) => {
+        stream.pushStream({ ":path": "/" }, { parent: stream.id }, (err, pushStream, headers) => {
             pushStream.respondWithFile(__dirname + file, {
                 'content-type': mime
             }, {
@@ -87,33 +108,31 @@ if (prod) {
         const reqPath = headers[HTTP2_HEADER_PATH];
         const reqMethod = headers[HTTP2_HEADER_METHOD];
 
-            // handle HTML file
-        stream.respondWithFile(__dirname + '/client/index.html', {
-            "content-type": "text/html"
-        }, {
-            onError: (err) => {
-                respondToStreamError(err, stream);
-            }
-        });
+        if ('/' === reqPath) {
+            stream.respondWithFile(__dirname + '/client/index.html', {
+                'content-type': 'text/html'
+            }, {
+                onError: (err) => {
+                    respondToStreamError(err, stream);
+                }
+            });
+            const tmpFileArray = Object.entries(gameFiles);
+            for (let i = 0, iEnd = tmpFileArray.length; i < iEnd; ++i) {
+                const curItem = tmpFileArray[i];
+                pushFile(stream, curItem[0], curItem[1]);
+            };
+        };
 
-        pushFile(stream, '/client/manifest.json', 'application/json');
-        pushFile(stream, '/client/css/game.css', 'text/css');
-        pushFile(stream, '/client/js/floatingText.min.js', 'text/javascript');
-        pushFile(stream, '/client/js/game.js', 'text/javascript');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType1.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType2.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType3.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/sprite/FoodType0.png', 'image/png');
-        pushFile(stream, '/client/img/game/uiButtons.png', 'image/png');
+        const reqFile = gameFiles[reqPath] || null;
+        if (reqFile) {
+            stream.respondWithFile(__dirname + '/client' + reqPath, {
+                'content-type': reqFile
+            }, {
+                onError: (err) => {
+                    respondToStreamError(err, stream);
+                }
+            });
+        };
 
     });
 
