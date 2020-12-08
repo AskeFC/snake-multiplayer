@@ -83,13 +83,12 @@ if (prod) {
 
     const pushFile = (stream, file, mime) => {
         stream.pushStream({ ':path': '/client' + file }, { exclusive: false, parent: stream }, (err, pushStream, headers) => {
-            if (err) { return console.log('error'); console.error(err); };
+            if (err) { return console.error(err); };
 
             pushStream.on('error', (err) => {
                 respondToStreamError(err, pushStream);
             });
             if (!pushStream.destroyed) {
-                console.log('sending...');
                 pushStream.respondWithFile(__dirname + '/client' + file, {
                     'content-type': mime
                 }, {
@@ -97,7 +96,7 @@ if (prod) {
                         respondToStreamError(err, pushStream);
                     }
                 });
-            } else { console.log('stream destroyed'); };
+            };
         });
     };
 
@@ -636,7 +635,7 @@ const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod && {
 
 wsApp.ws('/ws', {
     // config
-    compression: 1,
+    compression: 0,
     maxPayloadLength: 16 * 1024 * 1024,
     idleTimeout: 120,
 
