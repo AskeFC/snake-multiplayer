@@ -82,18 +82,24 @@ if (prod) {
     };
 
     const pushFile = (stream, file, mime) => {
-        stream.pushStream({}, (err, pushStream, headers) => {
-            console.log(file, __dirname + '/client' + file);
-            pushStream.respondWithFile(__dirname + '/client' + file, {
-                'content-type': mime + '; charset=utf-8',
-                'status': 200,
-                'Cache-Control': 'max-age=100'
-            }, {
-                onError: (err) => {
-                    console.log('err - push', err);
-                    respondToStreamError(err, pushStream);
-                }
+        stream.pushStream({ ':path': '/client' + file }, (err, pushStream) => {
+            if (err) { return console.error(err); };
+
+            pushStream.on('error', (err) => {
+                respondToStreamError(err, pushStream);
             });
+            if (!pushStream.destroyed) {
+                pushStream.respondWithFile(__dirname + '/client' + file, {
+                    'content-type': mime + '; charset=utf-8',
+                    'status': 200,
+                    'Cache-Control': 'max-age=100'
+                }, {
+                    onError: (err) => {
+                        console.log('err - push', err);
+                        respondToStreamError(err, pushStream);
+                    }
+                });
+            };
         });
     };
 
