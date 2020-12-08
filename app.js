@@ -74,6 +74,9 @@ console.log(colours.green('[SpaceSnake] Starting server...'));
 if (prod) {
     const respondToStreamError = (err, stream) => {
         console.log(colours.red(err));
+        if ((err.code === 'NGHTTP2_REFUSED_STREAM') || (err.code === 'NGHTTP2_PROTOCOL_ERROR')) {
+            
+        };
         stream.respond({ ":status": (err.code === 'ENOENT') ? HTTP_STATUS_NOT_FOUND : HTTP_STATUS_INTERNAL_SERVER_ERROR});
         stream.end();
     };
@@ -87,6 +90,7 @@ if (prod) {
                 'Cache-Control': 'max-age=100'
             }, {
                 onError: (err) => {
+                    console.log('err - push', err);
                     respondToStreamError(err, pushStream);
                 }
             });
@@ -116,6 +120,7 @@ if (prod) {
                 'content-type': 'text/html'
             }, {
                 onError: (err) => {
+                    console.log('err - base', err);
                     respondToStreamError(err, stream);
                 }
             });
@@ -133,6 +138,7 @@ if (prod) {
                 'content-type': reqFile
             }, {
                 onError: (err) => {
+                    console.log('err - req', err);
                     respondToStreamError(err, stream);
                 }
             });
