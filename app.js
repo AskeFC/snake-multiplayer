@@ -683,10 +683,10 @@ wsApp.ws('/*', {
         };
     }
 })
-.listen(1337, (listensocket) => {
+.listen(8443, (listensocket) => {
     listensocket ?
-        console.log(colours.cyan('[SpaceSnake] Websocket listening to port 1337')) :
-        console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 1337'));
+        console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8443')) :
+        console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
 });
 
 //--------------------------------------
