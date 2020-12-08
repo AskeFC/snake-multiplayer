@@ -82,7 +82,7 @@ if (prod) {
     };
 
     const pushFile = (stream, file, mime) => {
-        stream.pushStream({ ':path': '/client' + file }, (err, pushStream) => {
+        stream.pushStream({ ':path': '/client' + file }, { exclusive: false, parent: stream }, (err, pushStream, headers) => {
             if (err) { return console.error(err); };
 
             pushStream.on('error', (err) => {
@@ -95,11 +95,10 @@ if (prod) {
                     'Cache-Control': 'max-age=100'
                 }, {
                     onError: (err) => {
-                        console.log('err - push', err);
                         respondToStreamError(err, pushStream);
                     }
                 });
-            };
+            } else { console.log('stream destroyed'); };
         });
     };
 
@@ -126,7 +125,6 @@ if (prod) {
                 'content-type': 'text/html'
             }, {
                 onError: (err) => {
-                    console.log('err - base', err);
                     respondToStreamError(err, stream);
                 }
             });
@@ -139,12 +137,10 @@ if (prod) {
 
         const reqFile = gameFiles[reqPath] || null;
         if (reqFile) {
-            console.log('request', reqPath, reqFile);
             stream.respondWithFile(__dirname + '/client' + reqPath, {
                 'content-type': reqFile
             }, {
                 onError: (err) => {
-                    console.log('err - req', err);
                     respondToStreamError(err, stream);
                 }
             });
