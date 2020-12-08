@@ -83,16 +83,15 @@ if (prod) {
 
     const pushFile = (stream, file, mime) => {
         stream.pushStream({ ':path': '/client' + file }, { exclusive: false, parent: stream }, (err, pushStream, headers) => {
-            if (err) { return console.error(err); };
+            if (err) { return console.log('error'); console.error(err); };
 
             pushStream.on('error', (err) => {
                 respondToStreamError(err, pushStream);
             });
             if (!pushStream.destroyed) {
+                console.log('sending...');
                 pushStream.respondWithFile(__dirname + '/client' + file, {
-                    'content-type': mime + '; charset=utf-8',
-                    'status': 200,
-                    'Cache-Control': 'max-age=100'
+                    'content-type': mime
                 }, {
                     onError: (err) => {
                         respondToStreamError(err, pushStream);
