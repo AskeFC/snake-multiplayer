@@ -75,7 +75,7 @@ if (prod) {
     const respondToStreamError = (err, stream) => {
         console.log(colours.red(err));
         if ((err.code === 'NGHTTP2_REFUSED_STREAM') || (err.code === 'NGHTTP2_PROTOCOL_ERROR')) {
-            
+            return;
         };
         stream.respond({ ":status": (err.code === 'ENOENT') ? HTTP_STATUS_NOT_FOUND : HTTP_STATUS_INTERNAL_SERVER_ERROR});
         stream.end();
