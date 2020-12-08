@@ -80,7 +80,8 @@ if (prod) {
 
     const pushFile = (stream, file, mime) => {
         stream.pushStream({ ":path": "/" }, { parent: stream.id }, (err, pushStream, headers) => {
-            pushStream.respondWithFile(__dirname + '/client' + file, {
+            console.log(file);
+            pushStream.respondWithFile(__dirname + file, {
                 'content-type': mime
             }, {
                 onError: (err) => {
@@ -125,6 +126,7 @@ if (prod) {
 
         const reqFile = gameFiles[reqPath] || null;
         if (reqFile) {
+            console.log('request', reqPath, reqFile);
             stream.respondWithFile(__dirname + '/client' + reqPath, {
                 'content-type': reqFile
             }, {
