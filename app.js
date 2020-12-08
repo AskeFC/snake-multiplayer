@@ -623,7 +623,7 @@ const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod && {
     key_file_name: environment.MY_CERT_KEY
 })});
 
-wsApp.ws('/ws/*', {
+wsApp.ws('/ws', {
     // config
     compression: 1,
     maxPayloadLength: 16 * 1024 * 1024,
