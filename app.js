@@ -81,7 +81,7 @@ if (prod) {
     const pushFile = (stream, file, mime) => {
         stream.pushStream({ ":path": "/" }, { parent: stream.id }, (err, pushStream, headers) => {
             console.log(file);
-            pushStream.respondWithFile(__dirname + file, {
+            pushStream.respondWithFile(__dirname + '/client' + file, {
                 'content-type': mime
             }, {
                 onError: (err) => {
