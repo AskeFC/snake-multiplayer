@@ -642,7 +642,7 @@ if (prod) {
 //    key_file_name: environment.MY_CERT_KEY
 //} : {})});
 console.log(wsApp);
-wsApp.ws('/*', {
+wsApp.ws('/ws/*', {
     // config
     compression: 0,
     maxPayloadLength: 16 * 1024 * 1024,
@@ -702,7 +702,7 @@ wsApp.ws('/*', {
         };
     }
 })
-.listen(8443, (listensocket) => {
+.listen(9001, (listensocket) => {
     listensocket ?
         console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8443')) :
         console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
