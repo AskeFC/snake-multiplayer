@@ -628,10 +628,19 @@ const msgTypeMap = {
     }
 };
 
-const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod ? {
-    cert_file_name: environment.MY_CERT,
-    key_file_name: environment.MY_CERT_KEY
-} : {})});
+let wsApp = null;
+if (prod) {
+    wsApp = uWS.SSLApp({
+        cert_file_name: environment.MY_CERT,
+        key_file_name: environment.MY_CERT_KEY
+    });
+} else {
+    wsApp = uWS.App();
+};
+//const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod ? {
+//    cert_file_name: environment.MY_CERT,
+//    key_file_name: environment.MY_CERT_KEY
+//} : {})});
 console.log(wsApp);
 wsApp.ws('/*', {
     // config
