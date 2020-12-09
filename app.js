@@ -628,11 +628,11 @@ const msgTypeMap = {
     }
 };
 
-const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod && {
+const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod ? {
     cert_file_name: environment.MY_CERT,
     key_file_name: environment.MY_CERT_KEY
-})});
-
+} : {})});
+console.log(wsApp);
 wsApp.ws('/*', {
     // config
     compression: 0,
