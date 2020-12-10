@@ -641,12 +641,13 @@ if (prod) {
 //    cert_file_name: environment.MY_CERT,
 //    key_file_name: environment.MY_CERT_KEY
 //} : {})});
+console.log(environment.MY_CERT, environment.MY_CERT_KEY);
 console.log(wsApp);
 wsApp.ws('/ws', {
     // config
     compression: 0,
-    maxPayloadLength: 16 * 1024 * 1024,
-    idleTimeout: 120,
+    maxPayloadLength: 128 * 1024 * 1024,
+    idleTimeout: 360,
 
     open: (ws, req) => {
         // this handler is called when a client opens a ws connection with the server
@@ -706,8 +707,8 @@ wsApp.ws('/ws', {
     listensocket ?
         console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8443')) :
         console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
+    console.log(wsApp);
 });
-console.log(wsApp);
 
 //--------------------------------------
 
