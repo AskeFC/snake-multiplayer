@@ -89,7 +89,7 @@ if (prod) {
                 respondToStreamError(err, pushStream);
             });
             if (!pushStream.destroyed) {
-                pushStream.respondWithFile(__dirname + '/client' + file, {
+                pushStream.respondWithFile(__dirname + file, {
                     'content-type': mime
                 }, {
                     onError: (err) => {
@@ -135,7 +135,7 @@ if (prod) {
 
         const reqFile = gameFiles[reqPath] || null;
         if (reqFile) {
-            stream.respondWithFile(__dirname + '/client' + reqPath, {
+            stream.respondWithFile(__dirname + reqPath, {
                 'content-type': reqFile
             }, {
                 onError: (err) => {
