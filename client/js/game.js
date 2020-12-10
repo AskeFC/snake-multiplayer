@@ -60,7 +60,7 @@ const encode = (msg = {}) => {
 };
 
 const isLocal = ('localhost' === window.location.host);
-const ws = new WebSocket((isLocal ? 'ws://' : 'wss://') + window.location.host + ':8765');
+const ws = new WebSocket((isLocal ? 'ws://' : 'wss://') + window.location.host + ':8765/ws');
 ws.binaryType = 'arraybuffer';
 ws.onerror = (evt) => {
     console.log('error', evt);

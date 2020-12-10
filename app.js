@@ -642,7 +642,7 @@ if (prod) {
 //    key_file_name: environment.MY_CERT_KEY
 //} : {})});
 console.log(wsApp);
-wsApp.ws('/*', {
+wsApp.ws('/ws', {
     // config
     compression: 0,
     maxPayloadLength: 16 * 1024 * 1024,
