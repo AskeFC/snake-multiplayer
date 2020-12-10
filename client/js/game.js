@@ -60,7 +60,7 @@ const encode = (msg = {}) => {
 };
 
 const isLocal = ('localhost' === window.location.host);
-const ws = new WebSocket((isLocal ? 'ws://' : 'ws://') + window.location.host + ':8443', ['ws', 'wss']);
+const ws = new WebSocket((isLocal ? 'ws://' : 'wss://') + window.location.host + ':8765');
 ws.binaryType = 'arraybuffer';
 ws.onerror = (evt) => {
     console.log('error', evt);
@@ -155,19 +155,19 @@ const preload = () => {
         'FoodType11',
         'FoodType12'
     ], [
-        '/img/sprite/FoodType0.png',
-        '/img/sprite/FoodType1.png',
-        '/img/sprite/FoodType2.png',
-        '/img/sprite/FoodType3.png',
-        '/img/sprite/FoodType4.png',
-        '/img/sprite/FoodType5.png',
-        '/img/sprite/FoodType6.png',
-        '/img/sprite/FoodType7.png',
-        '/img/sprite/FoodType8.png',
-        '/img/sprite/FoodType9.png',
-        '/img/sprite/FoodType10.png',
-        '/img/sprite/FoodType11.png',
-        '/img/sprite/FoodType12.png'
+        '/client/img/sprite/FoodType0.png',
+        '/client/img/sprite/FoodType1.png',
+        '/client/img/sprite/FoodType2.png',
+        '/client/img/sprite/FoodType3.png',
+        '/client/img/sprite/FoodType4.png',
+        '/client/img/sprite/FoodType5.png',
+        '/client/img/sprite/FoodType6.png',
+        '/client/img/sprite/FoodType7.png',
+        '/client/img/sprite/FoodType8.png',
+        '/client/img/sprite/FoodType9.png',
+        '/client/img/sprite/FoodType10.png',
+        '/client/img/sprite/FoodType11.png',
+        '/client/img/sprite/FoodType12.png'
     ]);
     if (isMobile) {
         self.load.image('uiButtons', '/img/game/uiButtons.png');

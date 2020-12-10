@@ -4,24 +4,24 @@ const environment = process.env;
 const prod = ('prod' === environment.NODE_ENV);
 
 const gameFiles = {
-    '/manifest.json': 'application/json',
-    '/css/game.css': 'text/css',
-    '/js/floatingText.min.js': 'text/javascript',
-    '/js/game.js': 'text/javascript',
-    '/img/sprite/FoodType0.png': 'image/png',
-    '/img/sprite/FoodType1.png': 'image/png',
-    '/img/sprite/FoodType2.png': 'image/png',
-    '/img/sprite/FoodType3.png': 'image/png',
-    '/img/sprite/FoodType4.png': 'image/png',
-    '/img/sprite/FoodType5.png': 'image/png',
-    '/img/sprite/FoodType6.png': 'image/png',
-    '/img/sprite/FoodType7.png': 'image/png',
-    '/img/sprite/FoodType8.png': 'image/png',
-    '/img/sprite/FoodType9.png': 'image/png',
-    '/img/sprite/FoodType10.png': 'image/png',
-    '/img/sprite/FoodType11.png': 'image/png',
-    '/img/sprite/FoodType12.png': 'image/png',
-    '/img/game/uiButtons.png': 'image/png'
+    '/client/manifest.json': 'application/json',
+    '/client/css/game.css': 'text/css',
+    '/client/js/floatingText.min.js': 'text/javascript',
+    '/client/js/game.js': 'text/javascript',
+    '/client/img/sprite/FoodType0.png': 'image/png',
+    '/client/img/sprite/FoodType1.png': 'image/png',
+    '/client/img/sprite/FoodType2.png': 'image/png',
+    '/client/img/sprite/FoodType3.png': 'image/png',
+    '/client/img/sprite/FoodType4.png': 'image/png',
+    '/client/img/sprite/FoodType5.png': 'image/png',
+    '/client/img/sprite/FoodType6.png': 'image/png',
+    '/client/img/sprite/FoodType7.png': 'image/png',
+    '/client/img/sprite/FoodType8.png': 'image/png',
+    '/client/img/sprite/FoodType9.png': 'image/png',
+    '/client/img/sprite/FoodType10.png': 'image/png',
+    '/client/img/sprite/FoodType11.png': 'image/png',
+    '/client/img/sprite/FoodType12.png': 'image/png',
+    '/client/img/game/uiButtons.png': 'image/png'
 };
 
 //---------- Required modules ----------
@@ -702,11 +702,12 @@ wsApp.ws('/*', {
         };
     }
 })
-.listen(8443, (listensocket) => {
+.listen(8765, (listensocket) => {
     listensocket ?
         console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8443')) :
         console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
 });
+console.log(wsApp);
 
 //--------------------------------------
 
