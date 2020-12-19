@@ -649,6 +649,21 @@ wsApp.ws('/ws', {
     maxPayloadLength: 128 * 1024 * 1024,
     idleTimeout: 360,
 
+    upgrade: (res, req, context) => {
+        console.log('An Http connection wants to become WebSocket, URL: ' + req.getUrl() + '!');
+
+        /* This immediately calls open handler, you must not use res after this call */
+        res.upgrade({
+                url: req.getUrl()
+            },
+            /* Spell these correctly */
+            req.getHeader('sec-websocket-key'),
+            req.getHeader('sec-websocket-protocol'),
+            req.getHeader('sec-websocket-extensions'),
+            context
+        );
+    },
+
     open: (ws, req) => {
         // this handler is called when a client opens a ws connection with the server
         // console.log('open', ws, req);
