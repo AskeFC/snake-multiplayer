@@ -217,6 +217,7 @@ const create = () => {
 	self.camera.roundPx = true;
     self.camera.fadeIn(0x000000, 9000, true, 1);
 	cameraFollow = self.add.sprite(self.world.centerX, self.world.centerY);
+    self.camera.smoothed = true;
 	// game.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
 
 	let g = self.add.graphics(0, 0);
