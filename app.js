@@ -628,7 +628,7 @@ const msgTypeMap = {
     }
 };
 
-let wsApp = null;
+//let wsApp = null;
 //if (prod) {
 //    wsApp = uWS.SSLApp({
 //        cert_file_name: environment.MY_CERT,

@@ -186,6 +186,7 @@ const create = () => {
     self.world.useHandCursor = true;
     self.world.setBounds(0, 0, MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
     self.world.scale.setTo(WORLD_SCALE, WORLD_SCALE);
+    self.renderer.renderSession.roundPixels = true;
 
 	self.scale.parentIsWindow = false;
 
@@ -409,7 +410,7 @@ const spawn = (data) => {
     elements.playerInfo.style.display = 'inline-block';
     const self = game;
 	try {
-		self.camera.follow(null, Phaser.Camera.FOLLOW_LOCKON, 1, 1);
+		self.camera.follow(null, Phaser.Camera.FOLLOW_LOCKON, 0, 0);
 		self.camera.x = data.x * PIXEL_SIZE;
 		self.camera.y = data.y * PIXEL_SIZE;
 		self.camera.follow(cameraFollow, Phaser.Camera.FOLLOW_LOCKON, (CAMERA_SPEED / PIXEL_SIZE), (CAMERA_SPEED / PIXEL_SIZE));
