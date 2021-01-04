@@ -629,20 +629,18 @@ const msgTypeMap = {
 };
 
 let wsApp = null;
-if (prod) {
-    wsApp = uWS.SSLApp({
-        cert_file_name: environment.MY_CERT,
-        key_file_name: environment.MY_CERT_KEY
-    });
-} else {
-    wsApp = uWS.App();
-};
-//const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod ? {
-//    cert_file_name: environment.MY_CERT,
-//    key_file_name: environment.MY_CERT_KEY
-//} : {})});
-console.log(environment.MY_CERT, environment.MY_CERT_KEY);
-console.log(wsApp);
+//if (prod) {
+//    wsApp = uWS.SSLApp({
+//        cert_file_name: environment.MY_CERT,
+//        key_file_name: environment.MY_CERT_KEY
+//    });
+//} else {
+//    wsApp = uWS.App();
+//};
+const wsApp = uWS[prod ? "SSLApp" : "App"]({...(prod ? {
+    cert_file_name: environment.MY_CERT,
+    key_file_name: environment.MY_CERT_KEY
+} : {})});
 wsApp.ws('/ws', {
     // config
     compression: 0,
@@ -722,7 +720,6 @@ wsApp.ws('/ws', {
     listensocket ?
         console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8765')) :
         console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8765'));
-    console.log(wsApp);
 });
 
 //--------------------------------------
