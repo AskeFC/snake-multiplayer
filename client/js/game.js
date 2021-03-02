@@ -63,13 +63,13 @@ const isLocal = ('localhost' === window.location.host);
 let ws = new WebSocket((isLocal ? 'ws://' : 'wss://') + window.location.host + ':8443/ws');
 ws.binaryType = 'arraybuffer';
 ws.onerror = (evt) => {
-    if (!isLocal) {
-        ws = new WebSocket('ws://' + window.location.host + ':8443/ws');
-    };
     console.log('error', evt);
 };
 ws.onclose = (evt) => {
     console.log('close', evt);
+    if (!isLocal && (evt.code === 1015)) {
+        ws = new WebSocket('ws://' + window.location.host + ':8080/ws');
+    };
 };
 ws.onopen = (evt) => {
     // console.log('open', evt);
