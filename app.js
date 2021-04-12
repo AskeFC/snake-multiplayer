@@ -471,7 +471,7 @@ const update = async () => {
 //        food: foodPack
 //    });
 
-    wsApp.publish('gamestate', encode({
+    wsApp.ws.publish('gamestate', encode({
         t: 0,
         leaderboard: leaderboard,
         players: playerPack,
@@ -703,7 +703,7 @@ wsApp.ws('/ws', {
         // called when a ws connection is closed
         // console.log('close', ws, code, message);
         try {
-            if (PLAYER_LIST[ws.id].inGame) {
+            if (PLAYER_LIST[ws.id].inGame && !(PLAYER_LIST.length > INVINCIBLE_FOOD_LIST.length)) {
                 --INVINCIBLE_FOOD_LIST.length;
             };
             delete PLAYER_LIST[ws.id];
