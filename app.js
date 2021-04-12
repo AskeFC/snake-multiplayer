@@ -471,7 +471,7 @@ const update = async () => {
 //        food: foodPack
 //    });
 
-    wsApp.ws.publish('gamestate', encode({
+    wsApp.publish('gamestate', encode({
         t: 0,
         leaderboard: leaderboard,
         players: playerPack,
