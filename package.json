@@ -37,6 +37,6 @@
     "express": ">=4.17.1",
     "ocsp": "^1.2.0",
     "unique-names-generator": ">=4.3.1",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v19.1.0"
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v19.2.0"
   }
 }
