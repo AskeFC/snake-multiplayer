@@ -59,10 +59,10 @@ let halfTime = false;
 const MAX_FOOD = 1400;
 const config = {
     MAX_NAME_LENGTH: 32,
-    MAP_WIDTH: 500,
-    MAP_HEIGHT: 500,
+    MAP_WIDTH: 250,
+    MAP_HEIGHT: 250,
     PIXEL_SIZE: 14,
-    CAMERA_SPEED: 0.25
+    CAMERA_SPEED: 0.50
 };
 const dictionaries = [adjectives, animals, colors, countries, names, starWars];
 
@@ -728,7 +728,7 @@ setInterval(() => {
     update();
     (!halfTime) && (Object.keys(FOOD_LIST).length < MAX_FOOD) && spawnFood();
     halfTime = !halfTime;
-}, 1000 / (fps * 2));
+}, 800 / (fps * 2));
 
 console.log(colours.green('[SpaceSnake] Server started '));
 if (debug) {
