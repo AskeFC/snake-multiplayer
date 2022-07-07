@@ -53,7 +53,7 @@ const server = http2.createSecureServer(certs);
 const ocspCache = new ocsp.Cache();
 
 //---------- Server settings ----------
-const fps = 4;
+const fps = 3;
 let halfTime = false;
 const MAX_FOOD = 700;
 const config = {
