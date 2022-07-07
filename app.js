@@ -1,8 +1,5 @@
 'use strict';
 
-const environment = process.env;
-const prod = ('prod' === environment.NODE_ENV);
-
 const gameFiles = {
     '/client/manifest.json': 'application/json',
     '/client/css/game.css': 'text/css',
@@ -24,7 +21,7 @@ const gameFiles = {
     '/client/img/game/uiButtons.png': 'image/png'
 };
 
-//---------- Required modules ----------
+//---------- Required modules and Initialising----------
 const http2 = require('http2');
 const fs = require('fs');
 const ocsp = require('ocsp');
@@ -33,11 +30,13 @@ const express = require('express');
 const app = module.exports = express();
 const serv = require('http').Server(app);
 
+const environment = process.env;
+const prod = ('prod' === environment.NODE_ENV);
+
 // const io = require('socket.io')(serv, {});
 const colours = require('colors/safe');
 const { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } = require('unique-names-generator');
  
-
 const {
     HTTP2_HEADER_PATH,
     HTTP2_HEADER_METHOD,
@@ -56,7 +55,7 @@ const ocspCache = new ocsp.Cache();
 //---------- Server settings ----------
 const fps = 4;
 let halfTime = false;
-const MAX_FOOD = 1000;
+const MAX_FOOD = 700;
 const config = {
     MAX_NAME_LENGTH: 32,
     MAP_WIDTH: 250,
