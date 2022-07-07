@@ -54,9 +54,9 @@ const server = http2.createSecureServer(certs);
 const ocspCache = new ocsp.Cache();
 
 //---------- Server settings ----------
-const fps = 2;
+const fps = 4;
 let halfTime = false;
-const MAX_FOOD = 1400;
+const MAX_FOOD = 1000;
 const config = {
     MAX_NAME_LENGTH: 32,
     MAP_WIDTH: 250,
@@ -728,7 +728,7 @@ setInterval(() => {
     update();
     (!halfTime) && (Object.keys(FOOD_LIST).length < MAX_FOOD) && spawnFood();
     halfTime = !halfTime;
-}, 800 / (fps * 2));
+}, 1000 / (fps * 2));
 
 console.log(colours.green('[SpaceSnake] Server started '));
 if (debug) {
