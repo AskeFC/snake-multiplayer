@@ -12,7 +12,7 @@
 
 ### How to play
 
-Mostly there is an instance running [here](http://snake1.askefc.net), where you can just try out the game.
+Mostly there is an instance running [here](http://spacesnake.askefc.net), where you can just try out the game.
 
 Enter a gamehandle/name and press Play or hit ENTER/RETURN.
 Control the snake direction using arrow keys or WASD, while hitting SHIFT is for firing off your super speed powers.
