@@ -581,7 +581,7 @@ const disconnectSocket = (id) => {
 
 //--------------------------------------
 
-
+process.env['ALIEN_UWS'] = 1;
 const uWS = require('uWebSockets.js');
 const decode = (msg = []) => {
     const tmpMsg = msg;
