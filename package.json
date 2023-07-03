@@ -27,6 +27,7 @@
     "url": "git+https://github.com/AskeFC/snake-multiplayer.git"
   },
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "nodetest": "node --debug --use_strict app.js",
     "buntest": "bun --debug --use_strict app.js",

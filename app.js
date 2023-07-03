@@ -1,5 +1,24 @@
 'use strict';
 
+//---------- Required modules and Initialising----------
+
+import colors from 'colors/safe.js';
+import { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } from 'unique-names-generator';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+import http2 from 'node:http2';
+import fs from 'node:fs';
+import ocsp from 'ocsp';
+
+import express from "express";
+import http from 'node:http';
+
+//---------- Required constants and Initialising----------
+
+const app = module.exports = express();
+const serv = http.createServer(app);
+
 const gameFiles = {
     '/client/manifest.json': 'application/json',
     '/client/css/game.css': 'text/css',
@@ -21,21 +40,13 @@ const gameFiles = {
     '/client/img/game/uiButtons.png': 'image/png'
 };
 
-//---------- Required modules and Initialising----------
-const http2 = require('http2');
-const fs = require('fs');
-const ocsp = require('ocsp');
-
-const express = require('express');
-const app = module.exports = express();
-const serv = require('http').Server(app);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const environment = process.env;
 const prod = ('prod' === environment.NODE_ENV);
 
 // const io = require('socket.io')(serv, {});
-const colours = require('colors/safe');
-const { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } = require('unique-names-generator');
  
 const {
     HTTP2_HEADER_PATH,
