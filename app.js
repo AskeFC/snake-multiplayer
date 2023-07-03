@@ -16,7 +16,7 @@ import http from 'node:http';
 
 //---------- Required constants and Initialising----------
 
-const app = module.exports = express();
+const app = express();
 const serv = http.createServer(app);
 
 const gameFiles = {
