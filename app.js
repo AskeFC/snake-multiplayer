@@ -2,8 +2,8 @@
 
 //---------- Required modules and Initialising----------
 
-import * as colours from 'colors/safe.js';
-import { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } from 'unique-names-generator';
+import colors from 'colors/safe.js';
+import { uniqueNamesGenerator, adjectives, animals, colors as colours, countries, names, starWars } from 'unique-names-generator';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -74,16 +74,16 @@ const config = {
     PIXEL_SIZE: 14,
     CAMERA_SPEED: 0.50
 };
-const dictionaries = [adjectives, animals, colors, countries, names, starWars];
+const dictionaries = [adjectives, animals, colours, countries, names, starWars];
 
 //---------- Server startup ----------
 const port = environment.PORT || 80;
 const debug = typeof v8debug === 'object' || /--debug/.test(process.execArgv.join(' '));
 
-console.log(colours.green('[SpaceSnake] Starting server...'));
+console.log(colors.green('[SpaceSnake] Starting server...'));
 if (prod) {
     const respondToStreamError = (err, stream) => {
-        console.log(colours.red(err));
+        console.log(colors.red(err));
         if ((err.code === 'NGHTTP2_REFUSED_STREAM') || (err.code === 'NGHTTP2_PROTOCOL_ERROR')) {
             return;
         };
@@ -110,7 +110,7 @@ if (prod) {
         });
     };
 
-    server.on('error', (err) => console.error(colours.red(err)));
+    server.on('error', (err) => console.error(colors.red(err)));
 
     server.on('OCSPRequest', (cert, issuer, callback) => {
         ocsp.getOCSPURI(cert, (err, uri) => {
@@ -157,7 +157,7 @@ if (prod) {
     });
 
     server.listen(port);
-    console.log(colours.green('[SpaceSnake] Https started on port ' + port));
+    console.log(colors.green('[SpaceSnake] Https started on port ' + port));
 } else {
     app.get('/', (req, res) => {
         res.sendFile(__dirname + '/client/index.html');
@@ -165,7 +165,7 @@ if (prod) {
     app.use('/client', express.static(__dirname + '/client'));
 
     serv.listen(port);
-    console.log(colours.green('[SpaceSnake] Http started on port ' + port));
+    console.log(colors.green('[SpaceSnake] Http started on port ' + port));
 };
 
 
@@ -542,7 +542,7 @@ const disconnectSocket = (id) => {
 //		id: socket.id,
 //        config: config
 //	});
-//	console.log(colours.cyan('[Snake] Socket connection with id ' + socket.id));
+//	console.log(colors.cyan('[Snake] Socket connection with id ' + socket.id));
 
 //	socket.on('keyPress', (data) => {
 //        const inputId = data.inputId;
@@ -566,7 +566,7 @@ const disconnectSocket = (id) => {
 //                --INVINCIBLE_FOOD_LIST.length;
 //            };
 //			delete PLAYER_LIST[socket.id];
-//			console.log(colours.cyan('[Snake] Player with id ' + socket.id + ' disconnected'));
+//			console.log(colors.cyan('[Snake] Player with id ' + socket.id + ' disconnected'));
 //			disconnectSocket(socket.id);
 //		} catch(err) {
 //			if (debug) {
@@ -687,7 +687,7 @@ wsApp.ws('/ws', {
             conf: config
         }), true, true);
         ws.subscribe('gamestate');
-        console.log(colours.cyan('[SpaceSnake] Socket connection with id ' + ws.id));
+        console.log(colous.cyan('[SpaceSnake] Socket connection with id ' + ws.id));
     },
 
     ping: (ws) => {
@@ -717,7 +717,7 @@ wsApp.ws('/ws', {
                 --INVINCIBLE_FOOD_LIST.length;
             };
             delete PLAYER_LIST[ws.id];
-            console.log(colours.cyan('[SpaceSnake] Player with id ' + ws.id + ' disconnected'));
+            console.log(colors.cyan('[SpaceSnake] Player with id ' + ws.id + ' disconnected'));
             disconnectSocket(ws.id);
         } catch(err) {
             if (debug) {
@@ -728,8 +728,8 @@ wsApp.ws('/ws', {
 })
 .listen(8443, (listensocket) => {
     listensocket ?
-        console.log(colours.cyan('[SpaceSnake] Websocket listening to port 8443')) :
-        console.log(colours.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
+        console.log(colors.cyan('[SpaceSnake] Websocket listening to port 8443')) :
+        console.log(colors.cyan('[SpaceSnake] Websocket failed to listen to port 8443'));
 });
 
 //--------------------------------------
@@ -740,7 +740,7 @@ setInterval(() => {
     halfTime = !halfTime;
 }, 1000 / (fps * 2));
 
-console.log(colours.green('[SpaceSnake] Server started '));
+console.log(colors.green('[SpaceSnake] Server started '));
 if (debug) {
 	console.log('Running in debug mode');
 };
