@@ -2,7 +2,7 @@
 
 //---------- Required modules and Initialising----------
 
-import { colors as colours } from 'colors/safe.js';
+import * as colours from 'colors/safe.js';
 import { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } from 'unique-names-generator';
 import { fileURLToPath } from 'url';
 import path from 'path';
