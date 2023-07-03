@@ -2,7 +2,7 @@
 
 //---------- Required modules and Initialising----------
 
-import colours from 'colors/safe.js';
+import colors as colours from 'colors/safe.js';
 import { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } from 'unique-names-generator';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -11,7 +11,7 @@ import http2 from 'node:http2';
 import fs from 'node:fs';
 import ocsp from 'ocsp';
 
-import express from "express";
+import express from 'express';
 import http from 'node:http';
 
 //---------- Required constants and Initialising----------
