@@ -2,8 +2,8 @@
 
 //---------- Required modules and Initialising----------
 
-import colors from 'colors/safe.js';
-import { uniqueNamesGenerator, adjectives, animals, colors as colornames, countries, names, starWars } from 'unique-names-generator';
+import colours from 'colors/safe.js';
+import { uniqueNamesGenerator, adjectives, animals, colors, countries, names, starWars } from 'unique-names-generator';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -74,7 +74,7 @@ const config = {
     PIXEL_SIZE: 14,
     CAMERA_SPEED: 0.50
 };
-const dictionaries = [adjectives, animals, colornames, countries, names, starWars];
+const dictionaries = [adjectives, animals, colors, countries, names, starWars];
 
 //---------- Server startup ----------
 const port = environment.PORT || 80;
