@@ -12,12 +12,12 @@ import fs from 'node:fs';
 import ocsp from 'ocsp';
 
 import express from 'express';
-import { Hono } from 'hono';
+//import { Hono } from 'hono';
 import http from 'node:http';
 
 //---------- Required constants and Initialising----------
 
-const app = new Hono();
+const app = express();
 const serv = http.createServer(app);
 
 const gameFiles = {
