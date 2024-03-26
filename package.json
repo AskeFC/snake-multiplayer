@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "colors": ">=1.4.0",
-    "express": ">=4.19.1",
+    "express": ">=4.19.2",
     "ocsp": "^1.2.0",
     "unique-names-generator": ">=4.7.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
